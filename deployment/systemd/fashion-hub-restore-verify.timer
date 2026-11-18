@@ -1,0 +1,11 @@
+[Unit]
+Description=Run monthly Fashion Hub restore verification
+
+[Timer]
+OnCalendar=*-*-01 05:00:00 Asia/Kolkata
+Persistent=true
+AccuracySec=1min
+Unit=fashion-hub-restore-verify.service
+
+[Install]
+WantedBy=timers.target

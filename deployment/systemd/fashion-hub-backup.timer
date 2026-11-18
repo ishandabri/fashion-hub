@@ -1,0 +1,11 @@
+[Unit]
+Description=Run Fashion Hub backup daily at 07:00 IST
+
+[Timer]
+OnCalendar=*-*-* 07:00:00 Asia/Kolkata
+Persistent=true
+AccuracySec=1min
+Unit=fashion-hub-backup.service
+
+[Install]
+WantedBy=timers.target

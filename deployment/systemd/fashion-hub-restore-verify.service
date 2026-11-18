@@ -1,0 +1,15 @@
+[Unit]
+Description=Verify Fashion Hub SQLite backup restore
+Requires=mnt-WebAppsBkp.mount
+After=mnt-WebAppsBkp.mount
+ConditionPathIsMountPoint=/mnt/WebAppsBkp
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/home/ishan/projects/fashion-hub
+Environment=TZ=Asia/Kolkata
+Environment=BACKUP_ROOT=/mnt/WebAppsBkp/fashion-hub
+ExecStartPre=/usr/bin/mountpoint -q /mnt/WebAppsBkp
+ExecStart=/usr/bin/python3 /usr/local/sbin/fashion-hub-restore-verify.py
+SyslogIdentifier=fashion-hub-backup-restore-verify

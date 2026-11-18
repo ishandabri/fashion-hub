@@ -60,9 +60,10 @@ The frontend binds to `127.0.0.1:8080`. Configure the host-managed Cloudflare Tu
 
 ## Nightly backups
 
-Configure `SOURCE_DB` and `BACKUP_DIR` for a mounted NAS or external-storage path, then run `scripts/backup_sqlite.py` from a host cron job or systemd timer. The script uses SQLite’s online backup API and retains seven backups.
+Install the files in `deployment/systemd/` as host-level scripts and systemd units on the Raspberry Pi. The backup timer runs daily at 07:00 IST and writes verified SQLite backups to `/mnt/WebAppsBkp/fashion-hub`, retaining 3 daily backups. The restore-verification timer runs on the first day of each month.
+
+The systemd service expects the application at `/home/ishan/projects/fashion-hub`; update the `SOURCE_DB` and `WorkingDirectory` values if the deployment path differs. The backup service must run only after the `/mnt/WebAppsBkp` mount is available.
 
 ## Current implementation status
 
-The repository includes the initial runnable foundation, authentication bootstrap, daily sales, inventory add/sell/return flows, dashboard basics, PWA metadata, Docker configuration, and backup utility. Recurring expenses, other expenses, historical reporting, import/export, and expanded test coverage remain next implementation phases.
-
+The repository includes the initial runnable foundation, authentication bootstrap, daily sales, inventory add/sell/return flows, dashboard basics, PWA metadata, Docker configuration, and systemd backup/restore-verification units. Recurring expenses, other expenses, historical reporting, import/export, and expanded test coverage remain next implementation phases.

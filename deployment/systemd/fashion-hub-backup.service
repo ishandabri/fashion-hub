@@ -1,0 +1,17 @@
+[Unit]
+Description=Fashion Hub nightly SQLite backup
+Requires=mnt-WebAppsBkp.mount
+After=mnt-WebAppsBkp.mount
+ConditionPathIsMountPoint=/mnt/WebAppsBkp
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/home/ishan/projects/fashion-hub
+Environment=TZ=Asia/Kolkata
+Environment=BACKUP_ROOT=/mnt/WebAppsBkp/fashion-hub
+Environment=SOURCE_DB=/home/ishan/projects/fashion-hub/data/store.db
+Environment=RETENTION_COUNT=3
+ExecStartPre=/usr/bin/mountpoint -q /mnt/WebAppsBkp
+ExecStart=/usr/bin/python3 /usr/local/sbin/fashion-hub-backup.py
+SyslogIdentifier=fashion-hub-backup
