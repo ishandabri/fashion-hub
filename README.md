@@ -79,7 +79,7 @@ For repeat use, put non-secret deployment settings in `.env.deploy` (ignored by 
 
 Install the files in `deployment/systemd/` as host-level scripts and systemd units on the Raspberry Pi. The backup timer runs daily at 07:00 IST and writes verified SQLite backups to `/mnt/WebAppsBkp/fashion-hub`, retaining 3 daily backups. The restore-verification timer runs on the first day of each month.
 
-The systemd service expects the application at `/home/ishan/projects/fashion-hub`; update the `SOURCE_DB` and `WorkingDirectory` values if the deployment path differs. The backup service must run only after the `/mnt/WebAppsBkp` mount is available.
+The systemd service expects the application at `/home/ishan/projects/fashion-hub`; update the `SOURCE_DB` and `WorkingDirectory` values if the deployment path differs. The backup service must run only after the `/mnt/WebAppsBkp` mount is available. It stages and verifies the SQLite backup locally at `/var/lib/fashion-hub-backup` before copying the completed artifact to the backup share, which avoids SQLite locking issues on CIFS/SMB mounts.
 
 ## Current implementation status
 

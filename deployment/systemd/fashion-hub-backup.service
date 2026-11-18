@@ -10,6 +10,7 @@ User=root
 WorkingDirectory=/home/ishan/projects/fashion-hub
 Environment=TZ=Asia/Kolkata
 Environment=BACKUP_ROOT=/mnt/WebAppsBkp/fashion-hub
+Environment=STAGING_ROOT=/var/lib/fashion-hub-backup
 Environment=SOURCE_DB=/home/ishan/projects/fashion-hub/data/store.db
 Environment=RETENTION_COUNT=3
 ExecStartPre=/usr/bin/mountpoint -q /mnt/WebAppsBkp

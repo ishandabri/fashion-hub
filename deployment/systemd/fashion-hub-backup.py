@@ -15,6 +15,7 @@ from pathlib import Path
 
 DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 BACKUP_ROOT = Path(os.environ.get("BACKUP_ROOT", "/mnt/WebAppsBkp/fashion-hub"))
+STAGING_ROOT = Path(os.environ.get("STAGING_ROOT", "/var/lib/fashion-hub-backup"))
 SOURCE_DB_VALUE = os.environ.get("SOURCE_DB", "")
 SOURCE_DB = Path(SOURCE_DB_VALUE) if SOURCE_DB_VALUE else None
 RETENTION_COUNT = int(os.environ.get("RETENTION_COUNT", "3"))
@@ -46,6 +47,7 @@ def main() -> None:
     if not mount_root.is_mount():
         fail(f"backup mount is unavailable: {mount_root}")
     BACKUP_ROOT.mkdir(parents=True, exist_ok=True)
+    STAGING_ROOT.mkdir(parents=True, exist_ok=True)
     LOCK_PATH.parent.mkdir(parents=True, exist_ok=True)
 
     with LOCK_PATH.open("w") as lock_handle:
@@ -57,12 +59,14 @@ def main() -> None:
 
         backup_date = datetime.now().strftime("%Y-%m-%d")
         final_dir = BACKUP_ROOT / backup_date
-        staging_dir = BACKUP_ROOT / f".{backup_date}.partial.{os.getpid()}"
-        previous_dir = BACKUP_ROOT / f".{backup_date}.previous.{os.getpid()}"
-        backup_file = staging_dir / "backup.db"
-        shutil.rmtree(staging_dir, ignore_errors=True)
-        shutil.rmtree(previous_dir, ignore_errors=True)
-        staging_dir.mkdir()
+        remote_staging_dir = BACKUP_ROOT / f".{backup_date}.partial.{os.getpid()}"
+        remote_previous_dir = BACKUP_ROOT / f".{backup_date}.previous.{os.getpid()}"
+        local_staging_dir = STAGING_ROOT / f".{backup_date}.partial.{os.getpid()}"
+        backup_file = local_staging_dir / "backup.db"
+        shutil.rmtree(local_staging_dir, ignore_errors=True)
+        shutil.rmtree(remote_staging_dir, ignore_errors=True)
+        shutil.rmtree(remote_previous_dir, ignore_errors=True)
+        local_staging_dir.mkdir()
 
         try:
             with sqlite3.connect(SOURCE_DB) as source, sqlite3.connect(backup_file) as target:
@@ -72,21 +76,27 @@ def main() -> None:
                     fail(f"integrity check failed: {result}")
 
             checksum = sha256(backup_file)
-            (staging_dir / "SHA256SUMS").write_text(f"{checksum}  backup.db\n", encoding="utf-8")
-            (staging_dir / "METADATA.txt").write_text(
+            (local_staging_dir / "SHA256SUMS").write_text(f"{checksum}  backup.db\n", encoding="utf-8")
+            (local_staging_dir / "METADATA.txt").write_text(
                 f"source={SOURCE_DB}\ncompleted_at={datetime.now().astimezone().isoformat()}\n"
                 "format=sqlite-online-backup\nstatus=complete\n",
                 encoding="utf-8",
             )
-            (staging_dir / "COMPLETE").touch()
+            (local_staging_dir / "COMPLETE").touch()
+            remote_staging_dir.mkdir()
+            for filename in ("backup.db", "SHA256SUMS", "METADATA.txt", "COMPLETE"):
+                shutil.copy2(local_staging_dir / filename, remote_staging_dir / filename)
             if final_dir.exists():
-                final_dir.rename(previous_dir)
-            staging_dir.rename(final_dir)
-            shutil.rmtree(previous_dir, ignore_errors=True)
+                final_dir.rename(remote_previous_dir)
+            remote_staging_dir.rename(final_dir)
+            shutil.rmtree(remote_previous_dir, ignore_errors=True)
         except Exception:
-            shutil.rmtree(staging_dir, ignore_errors=True)
-            shutil.rmtree(previous_dir, ignore_errors=True)
+            shutil.rmtree(local_staging_dir, ignore_errors=True)
+            shutil.rmtree(remote_staging_dir, ignore_errors=True)
+            shutil.rmtree(remote_previous_dir, ignore_errors=True)
             raise
+        finally:
+            shutil.rmtree(local_staging_dir, ignore_errors=True)
 
         complete_dirs = sorted(
             (path for path in BACKUP_ROOT.iterdir() if path.is_dir() and DATE_PATTERN.match(path.name) and (path / "COMPLETE").is_file()),
