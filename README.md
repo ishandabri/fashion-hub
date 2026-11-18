@@ -25,6 +25,30 @@ pnpm dev
 
 The frontend runs on port 5173 and proxies `/api` to the backend on port 8000.
 
+## Testing
+
+Run backend API and accounting tests:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+python -m pytest -q
+```
+
+Run frontend unit tests and build:
+
+```powershell
+npx --yes pnpm@9.15.0 --dir frontend test
+npx --yes pnpm@9.15.0 --dir frontend build
+```
+
+Run Playwright end-to-end tests against the local Docker stack. Install browsers once with `frontend\node_modules\.bin\playwright.cmd install chromium webkit`:
+
+```powershell
+npx --yes pnpm@9.15.0 --dir frontend exec playwright test
+```
+
+The suite covers authentication, dashboard/P&L visibility, primary navigation, expense tabs, inventory entry, mobile layout, and desktop layout.
+
 ## Docker deployment
 
 ```bash
