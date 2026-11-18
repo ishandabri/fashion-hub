@@ -48,6 +48,11 @@ To be defined. Candidate categories include activation, task completion, discove
 - Responsive, keyboard-accessible, and usable on touch devices.
 - Explicit loading, empty, error, and success states.
 
+## Technical delivery constraint
+
+- The developed application will be deployed in a container.
+- When Python is part of the implementation, local development and tooling should use an isolated `venv`; production containers should use the container environment directly unless a specific constraint requires otherwise.
+
 ## Open questions
 
 - What is Fashion Hub’s core problem and promise?

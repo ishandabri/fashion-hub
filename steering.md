@@ -10,6 +10,8 @@ This file records decisions that should guide future work. It is intentionally c
 | Theme | Light theme by default | Establishes a clean, approachable baseline |
 | Visual style | Minimalistic | Prioritizes products, content, and clear actions |
 | Icons | Use the shadcn icon approach | Maintains a consistent, accessible icon language |
+| Deployment | Use containers for deployment | Makes the production runtime reproducible and isolated |
+| Python development | Use a local `venv` when Python is involved | Keeps local dependencies isolated without nesting environments in production containers |
 | Documentation | Keep project guidance and product artifacts current as the app develops | Prevents implementation drift |
 
 ## Pending decisions
