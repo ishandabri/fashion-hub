@@ -58,6 +58,23 @@ docker compose up -d --build
 
 The frontend binds to `127.0.0.1:6001`. Configure the host-managed Cloudflare Tunnel to route the HTTPS hostname to that local address. Keep tunnel credentials outside Git.
 
+### Make commands
+
+The root `Makefile` supports both local Docker use and Raspberry Pi deployment. Set `DEPLOY_TARGET=local` for the local stack; the default target is `raspi`. Local Docker runs explicitly with `APP_ENV=development` because HTTPS is not available locally; Raspberry Pi deployments explicitly run with `APP_ENV=production`.
+
+```bash
+# Local Docker stack
+make preflight DEPLOY_TARGET=local
+make deploy DEPLOY_TARGET=local
+make local-down
+
+# Raspberry Pi (the remote checkout must already exist and be on main)
+make preflight RASPI_HOST=raspi RASPI_REPO_PATH=/home/ishan/projects/fashion-hub
+make deploy RASPI_HOST=raspi RASPI_REPO_PATH=/home/ishan/projects/fashion-hub
+```
+
+For repeat use, put non-secret deployment settings in `.env.deploy` (ignored by Git), for example `RASPI_HOST`, `RASPI_REPO_PATH`, and `BRANCH`. The remote `.env` must be created from `.env.example` and contain the production bootstrap password.
+
 ## Nightly backups
 
 Install the files in `deployment/systemd/` as host-level scripts and systemd units on the Raspberry Pi. The backup timer runs daily at 07:00 IST and writes verified SQLite backups to `/mnt/WebAppsBkp/fashion-hub`, retaining 3 daily backups. The restore-verification timer runs on the first day of each month.
