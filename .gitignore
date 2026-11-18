@@ -8,10 +8,8 @@ node_modules/
 frontend/dist/
 frontend/.vite/
 frontend/tsconfig.tsbuildinfo
-.env
-data/
 backups/
-*.db
+data/test-suite.db
 *.db-shm
 *.db-wal
 backend/*.egg-info/
