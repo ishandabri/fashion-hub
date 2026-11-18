@@ -65,6 +65,11 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
+@app.get("/api/v1/auth/config")
+def auth_config() -> dict[str, str]:
+    return {"username": settings.bootstrap_username}
+
+
 @app.post("/api/v1/auth/login", response_model=UserResponse)
 def login(payload: LoginRequest, response: Response, db: Session = Depends(get_db)):
     user = db.scalar(select(User).where(User.username == payload.username))

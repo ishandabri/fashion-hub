@@ -65,7 +65,7 @@ Also show a monthly P&L statement, provisional indicator for the current month, 
 
 ## INR formatting
 
-Create shared exact-value utilities: `formatINR`, `formatCompactINR`, `formatPercentage`, and `formatIndianNumber`. Display with `Intl.NumberFormat("en-IN")`, rupee symbol, Indian digit grouping, and two decimal places. Compact units are K, L, and Cr only, with safe boundary promotion and correct handling of zero, negatives, nulls, invalid values, and large amounts.
+Create shared exact-value utilities: `formatINR`, `formatCompactINR`, `formatPercentage`, and `formatIndianNumber`. Display with `Intl.NumberFormat("en-IN")`, rupee symbol, Indian digit grouping, and zero decimal places. Compact units are K, L, and Cr only, with safe boundary promotion and correct handling of zero, negatives, nulls, invalid values, and large amounts.
 
 ## Technical architecture
 

@@ -1,4 +1,4 @@
-const numberFormatter = new Intl.NumberFormat("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const numberFormatter = new Intl.NumberFormat("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 
 export function toPaise(value: string): number {
   const clean = value.replace(/,/g, "").trim();
@@ -17,8 +17,8 @@ export function formatCompactINR(paise: number | null | undefined): string {
   const value = paise / 100;
   const absolute = Math.abs(value);
   if (absolute < 1_000) return formatINR(paise);
-  if (absolute < 100_000) return `₹${(value / 1_000).toFixed(2)} K`;
-  if (absolute < 10_000_000) return `₹${(value / 100_000).toFixed(2)} L`;
-  return `₹${(value / 10_000_000).toFixed(2)} Cr`;
+  if (absolute < 100_000) return `₹${(value / 1_000).toFixed(0)} K`;
+  if (absolute < 10_000_000) return `₹${(value / 100_000).toFixed(0)} L`;
+  return `₹${(value / 10_000_000).toFixed(0)} Cr`;
 }
 
