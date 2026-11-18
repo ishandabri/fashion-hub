@@ -134,7 +134,20 @@ def delete_sale(sale_id: UUID, db: Session = Depends(get_db), _user: User = Depe
 
 @app.get("/api/v1/recurring-expenses", response_model=list[RecurringExpenseResponse])
 def list_recurring_expenses(db: Session = Depends(get_db), _user: User = Depends(current_user)):
-    return list(db.scalars(select(RecurringExpense).order_by(RecurringExpense.expense_name)).all())
+    expenses = list(db.scalars(select(RecurringExpense).order_by(RecurringExpense.expense_name)).all())
+    return [
+        {**{
+            "id": expense.id,
+            "expense_name": expense.expense_name,
+            "category": expense.category,
+            "is_active": expense.is_active,
+        }, **{
+            "amount_paise": expense.versions[0].amount_paise,
+            "effective_start_month": expense.versions[0].effective_start_month,
+            "effective_end_month": expense.versions[0].effective_end_month,
+        }}
+        for expense in expenses if expense.versions
+    ]
 
 
 @app.post("/api/v1/recurring-expenses", response_model=RecurringExpenseResponse, status_code=201)
@@ -244,5 +257,13 @@ def dashboard(month: str = Query(pattern=r"^\d{4}-\d{2}$"), db: Session = Depend
         elif item and event.event_type == EventType.RETURNED:
             cogs -= item.purchase_price_paise
     gross = sales - cogs
-    return DashboardResponse(month=month, sales_paise=sales, purchases_paise=purchases, cogs_paise=cogs, gross_profit_paise=gross, recurring_expenses_paise=0, other_expenses_paise=0, net_operating_profit_paise=gross, closing_inventory_paise=closing, unsold_item_count=len(unsold), provisional=month == datetime.now().strftime("%Y-%m"))
+    other_expenses = db.scalar(select(func.coalesce(func.sum(OtherExpense.amount_paise), 0)).where(func.strftime("%Y-%m", OtherExpense.expense_date) == month)) or 0
+    recurring_expenses = 0
+    for expense in db.scalars(select(RecurringExpense).where(RecurringExpense.is_active.is_(True))).all():
+        for version in expense.versions:
+            if version.effective_start_month.strftime("%Y-%m") <= month and (not version.effective_end_month or version.effective_end_month.strftime("%Y-%m") >= month):
+                recurring_expenses += version.amount_paise
+                break
+    operating_expenses = recurring_expenses + other_expenses
+    return DashboardResponse(month=month, sales_paise=sales, purchases_paise=purchases, cogs_paise=cogs, gross_profit_paise=gross, recurring_expenses_paise=recurring_expenses, other_expenses_paise=other_expenses, net_operating_profit_paise=gross - operating_expenses, closing_inventory_paise=closing, unsold_item_count=len(unsold), provisional=month == datetime.now().strftime("%Y-%m"))
 
