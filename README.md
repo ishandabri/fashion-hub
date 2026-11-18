@@ -56,7 +56,7 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
-The frontend binds to `127.0.0.1:6000`. Configure the host-managed Cloudflare Tunnel to route the HTTPS hostname to that local address. Keep tunnel credentials outside Git.
+The frontend binds to `127.0.0.1:6001`. Configure the host-managed Cloudflare Tunnel to route the HTTPS hostname to that local address. Keep tunnel credentials outside Git.
 
 ## Nightly backups
 

@@ -22,3 +22,8 @@ export function formatCompactINR(paise: number | null | undefined): string {
   return `₹${(value / 10_000_000).toFixed(0)} Cr`;
 }
 
+export function formatPercentage(value: number | null | undefined): string {
+  if (value == null || !Number.isFinite(value)) return "—";
+  return `${new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(value)}%`;
+}
+

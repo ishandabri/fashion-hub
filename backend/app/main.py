@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import calendar
 from datetime import date, datetime
 from pathlib import Path
 from uuid import UUID
@@ -252,7 +253,21 @@ def inventory_history(item_id: UUID, db: Session = Depends(get_db), _user: User 
 def dashboard(month: str = Query(pattern=r"^\d{4}-\d{2}$"), db: Session = Depends(get_db), _user: User = Depends(current_user)):
     sales = db.scalar(select(func.coalesce(func.sum(DailySale.amount_paise), 0)).where(func.strftime("%Y-%m", DailySale.sale_date) == month)) or 0
     purchases = db.scalar(select(func.coalesce(func.sum(InventoryItem.purchase_price_paise), 0)).where(func.strftime("%Y-%m", InventoryItem.purchase_date) == month)) or 0
-    unsold = list(db.scalars(select(InventoryItem).where(InventoryItem.current_status == InventoryStatus.IN_STOCK)).all())
+    month_start = date.fromisoformat(f"{month}-01")
+    month_end = date(year=month_start.year, month=month_start.month, day=calendar.monthrange(month_start.year, month_start.month)[1])
+    unsold = []
+    for item in db.scalars(select(InventoryItem)).all():
+        status_at_month_end = None
+        events = db.scalars(select(InventoryEvent).where(InventoryEvent.inventory_item_id == item.id, InventoryEvent.event_date <= month_end).order_by(InventoryEvent.event_date, InventoryEvent.created_at, InventoryEvent.id)).all()
+        for event in events:
+            if event.event_type == EventType.PURCHASED:
+                status_at_month_end = InventoryStatus.IN_STOCK
+            elif event.event_type == EventType.SOLD:
+                status_at_month_end = InventoryStatus.SOLD
+            elif event.event_type in (EventType.RETURNED, EventType.SALE_REVERSED):
+                status_at_month_end = InventoryStatus.IN_STOCK
+        if status_at_month_end == InventoryStatus.IN_STOCK:
+            unsold.append(item)
     closing = sum(item.purchase_price_paise for item in unsold)
     cogs = 0
     for event in db.scalars(select(InventoryEvent).where(func.strftime("%Y-%m", InventoryEvent.event_date) == month)).all():
@@ -270,5 +285,6 @@ def dashboard(month: str = Query(pattern=r"^\d{4}-\d{2}$"), db: Session = Depend
                 recurring_expenses += version.amount_paise
                 break
     operating_expenses = recurring_expenses + other_expenses
-    return DashboardResponse(month=month, sales_paise=sales, purchases_paise=purchases, cogs_paise=cogs, gross_profit_paise=gross, recurring_expenses_paise=recurring_expenses, other_expenses_paise=other_expenses, net_operating_profit_paise=gross - operating_expenses, closing_inventory_paise=closing, unsold_item_count=len(unsold), provisional=month == datetime.now().strftime("%Y-%m"))
+    net_operating_profit = gross - operating_expenses
+    return DashboardResponse(month=month, sales_paise=sales, purchases_paise=purchases, cogs_paise=cogs, gross_profit_paise=gross, gross_margin_percentage=(gross / sales * 100) if sales else None, recurring_expenses_paise=recurring_expenses, other_expenses_paise=other_expenses, net_operating_profit_paise=net_operating_profit, operating_margin_percentage=(net_operating_profit / sales * 100) if sales else None, closing_inventory_paise=closing, unsold_item_count=len(unsold), provisional=month == datetime.now().strftime("%Y-%m"))
 

@@ -73,3 +73,14 @@ def test_dashboard_cogs_and_inventory_value():
         assert dashboard["cogs_paise"] == 70000
         assert dashboard["closing_inventory_paise"] == 0
 
+
+def test_dashboard_closing_inventory_uses_selected_month_end():
+    with TestClient(app) as client:
+        login(client)
+        item = client.post("/api/v1/inventory", json={"item_code": "HISTORY-001", "purchase_date": "2026-10-01", "purchase_price_paise": 45000}).json()
+        client.post(f"/api/v1/inventory/{item['id']}/sell", json={"sold_date": "2026-11-02"})
+        october = client.get("/api/v1/reports/dashboard?month=2026-10").json()
+        november = client.get("/api/v1/reports/dashboard?month=2026-11").json()
+        assert october["closing_inventory_paise"] == 45000
+        assert november["closing_inventory_paise"] == 0
+

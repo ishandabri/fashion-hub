@@ -10,6 +10,7 @@ frontend/.vite/
 frontend/tsconfig.tsbuildinfo
 backups/
 data/test-suite.db
+backend/data/
 *.db-shm
 *.db-wal
 backend/*.egg-info/

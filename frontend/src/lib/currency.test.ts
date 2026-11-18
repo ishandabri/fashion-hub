@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatCompactINR, formatINR, toPaise } from "./currency";
+import { formatCompactINR, formatINR, formatPercentage, toPaise } from "./currency";
 
 describe("currency utilities", () => {
   it("converts rupee input to paise exactly", () => {
@@ -18,6 +18,11 @@ describe("currency utilities", () => {
     expect(formatCompactINR(1250000)).toBe("₹13 K");
     expect(formatCompactINR(12500000)).toBe("₹1 L");
     expect(formatCompactINR(1250000000)).toBe("₹1 Cr");
+  });
+
+  it("formats percentages", () => {
+    expect(formatPercentage(64.5)).toBe("65%");
+    expect(formatPercentage(null)).toBe("—");
   });
 });
 

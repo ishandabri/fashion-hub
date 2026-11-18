@@ -74,9 +74,11 @@ class DashboardResponse(BaseModel):
     purchases_paise: int
     cogs_paise: int
     gross_profit_paise: int
+    gross_margin_percentage: float | None
     recurring_expenses_paise: int
     other_expenses_paise: int
     net_operating_profit_paise: int
+    operating_margin_percentage: float | None
     closing_inventory_paise: int
     unsold_item_count: int
     provisional: bool
