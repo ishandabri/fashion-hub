@@ -10,8 +10,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from .config import get_settings
-from .db import Base, engine, get_db
-from .models import DailySale, EventType, InventoryEvent, InventoryItem, InventoryStatus, User
+from .db import Base, engine, ensure_compatible_schema, get_db
+from .models import DailySale, EventType, InventoryEvent, InventoryItem, InventoryStatus, OtherExpense, RecurringExpense, RecurringExpenseVersion, User
 from .schemas import (
     DashboardResponse,
     DailySaleCreate,
@@ -21,6 +21,10 @@ from .schemas import (
     InventoryResponse,
     LoginRequest,
     ReturnRequest,
+    OtherExpenseCreate,
+    OtherExpenseResponse,
+    RecurringExpenseCreate,
+    RecurringExpenseResponse,
     SellRequest,
     UserResponse,
 )
@@ -40,6 +44,7 @@ def bootstrap(db: Session) -> None:
 async def lifespan(_app: FastAPI):
     Path("./data").mkdir(exist_ok=True)
     Base.metadata.create_all(engine)
+    ensure_compatible_schema()
     with Session(engine) as db:
         bootstrap(db)
     yield
@@ -125,6 +130,37 @@ def delete_sale(sale_id: UUID, db: Session = Depends(get_db), _user: User = Depe
         raise HTTPException(status_code=404, detail="Sales record not found")
     db.delete(sale)
     db.commit()
+
+
+@app.get("/api/v1/recurring-expenses", response_model=list[RecurringExpenseResponse])
+def list_recurring_expenses(db: Session = Depends(get_db), _user: User = Depends(current_user)):
+    return list(db.scalars(select(RecurringExpense).order_by(RecurringExpense.expense_name)).all())
+
+
+@app.post("/api/v1/recurring-expenses", response_model=RecurringExpenseResponse, status_code=201)
+def create_recurring_expense(payload: RecurringExpenseCreate, db: Session = Depends(get_db), _user: User = Depends(current_user)):
+    if payload.effective_end_month and payload.effective_end_month < payload.effective_start_month:
+        raise HTTPException(status_code=422, detail="End month cannot precede start month")
+    expense = RecurringExpense(expense_name=payload.expense_name, category=payload.category)
+    expense.versions.append(RecurringExpenseVersion(amount_paise=payload.amount_paise, effective_start_month=payload.effective_start_month, effective_end_month=payload.effective_end_month))
+    db.add(expense)
+    db.commit()
+    db.refresh(expense)
+    return {**payload.model_dump(), "id": expense.id, "is_active": expense.is_active}
+
+
+@app.get("/api/v1/expenses", response_model=list[OtherExpenseResponse])
+def list_other_expenses(db: Session = Depends(get_db), _user: User = Depends(current_user)):
+    return list(db.scalars(select(OtherExpense).order_by(OtherExpense.expense_date.desc())).all())
+
+
+@app.post("/api/v1/expenses", response_model=OtherExpenseResponse, status_code=201)
+def create_other_expense(payload: OtherExpenseCreate, db: Session = Depends(get_db), _user: User = Depends(current_user)):
+    expense = OtherExpense(**payload.model_dump())
+    db.add(expense)
+    db.commit()
+    db.refresh(expense)
+    return expense
 
 
 @app.get("/api/v1/inventory", response_model=list[InventoryResponse])

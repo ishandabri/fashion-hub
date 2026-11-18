@@ -1,7 +1,7 @@
 from collections.abc import Generator
 from pathlib import Path
 
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine, event, inspect, text
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from .config import get_settings
@@ -30,6 +30,15 @@ def configure_sqlite(dbapi_connection, _connection_record):
 
 
 SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
+
+
+def ensure_compatible_schema() -> None:
+    """Apply small additive changes for the development database until migrations are added."""
+    inspector = inspect(engine)
+    with engine.begin() as connection:
+        for table, column, definition in (("recurring_expenses", "category", "VARCHAR(100) NOT NULL DEFAULT 'Miscellaneous'"), ("other_expenses", "category", "VARCHAR(100) NOT NULL DEFAULT 'Miscellaneous'")):
+            if table in inspector.get_table_names() and column not in {item["name"] for item in inspector.get_columns(table)}:
+                connection.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {definition}"))
 
 
 def get_db() -> Generator[Session, None, None]:

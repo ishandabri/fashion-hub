@@ -81,6 +81,7 @@ class RecurringExpense(Base):
     __tablename__ = "recurring_expenses"
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     expense_name: Mapped[str] = mapped_column(String(120))
+    category: Mapped[str] = mapped_column(String(100), default="Miscellaneous")
     category_id: Mapped[UUID | None] = mapped_column(ForeignKey("expense_categories.id"), nullable=True)
     is_active: Mapped[bool] = mapped_column(default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
@@ -101,6 +102,7 @@ class OtherExpense(Base):
     __tablename__ = "other_expenses"
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     expense_date: Mapped[date] = mapped_column(Date, index=True)
+    category: Mapped[str] = mapped_column(String(100), default="Miscellaneous")
     category_id: Mapped[UUID | None] = mapped_column(ForeignKey("expense_categories.id"), nullable=True)
     description: Mapped[str] = mapped_column(String(255))
     amount_paise: Mapped[int] = mapped_column(Integer)

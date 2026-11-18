@@ -81,3 +81,30 @@ class DashboardResponse(BaseModel):
     unsold_item_count: int
     provisional: bool
 
+
+class RecurringExpenseCreate(BaseModel):
+    expense_name: str = Field(min_length=1, max_length=120)
+    category: str = Field(default="Miscellaneous", min_length=1, max_length=100)
+    amount_paise: int = Field(ge=0)
+    effective_start_month: date
+    effective_end_month: date | None = None
+
+
+class RecurringExpenseResponse(RecurringExpenseCreate):
+    model_config = ConfigDict(from_attributes=True)
+    id: UUID
+    is_active: bool
+
+
+class OtherExpenseCreate(BaseModel):
+    expense_date: date
+    category: str = Field(default="Miscellaneous", min_length=1, max_length=100)
+    description: str = Field(min_length=1, max_length=255)
+    amount_paise: int = Field(ge=0)
+
+
+class OtherExpenseResponse(OtherExpenseCreate):
+    model_config = ConfigDict(from_attributes=True)
+    id: UUID
+    version: int
+
