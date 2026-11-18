@@ -9,7 +9,7 @@ This file records decisions that should guide future work. It is intentionally c
 | Component system | Use shadcn/ui patterns and components | Keeps the interface composable, consistent, and easy to customize |
 | Theme | Light theme by default | Establishes a clean, approachable baseline |
 | Visual style | Minimalistic | Prioritizes products, content, and clear actions |
-| Icons | Use the shadcn icon approach when available; otherwise Lucide | Maintains a consistent, accessible icon language |
+| Icons | Use the shadcn icon approach | Maintains a consistent, accessible icon language |
 | Documentation | Keep project guidance and product artifacts current as the app develops | Prevents implementation drift |
 
 ## Pending decisions

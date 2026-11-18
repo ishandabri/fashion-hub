@@ -44,7 +44,7 @@ To be defined. Candidate categories include activation, task completion, discove
 
 - Light, minimalistic visual direction.
 - shadcn/ui component foundation.
-- Lucide icons when no suitable shadcn icon set is available.
+- Use the shadcn icon approach consistently.
 - Responsive, keyboard-accessible, and usable on touch devices.
 - Explicit loading, empty, error, and success states.
 

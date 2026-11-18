@@ -9,7 +9,7 @@ Fashion Hub should feel light, minimal, modern, and content-first. The interface
 - Build with shadcn/ui components and design tokens.
 - Use a light theme as the default.
 - Prefer whitespace, clear hierarchy, restrained borders, and subtle elevation.
-- Use Lucide icons when a suitable shadcn icon is not available.
+- Use the shadcn icon approach consistently.
 - Icons should support nearby labels or accessible names; do not use unexplained icon-only controls.
 
 ## Interaction principles

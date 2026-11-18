@@ -9,7 +9,7 @@ This document is the working agreement for anyone—human or AI—developing Fas
 - Product context: to be defined as product requirements arrive.
 - Repository: `ishandabri/fashion-hub`.
 - UI foundation: shadcn/ui with a light, minimalistic visual language.
-- Icons: use the shadcn-provided icon approach where available; otherwise use Lucide icons.
+- Icons: use the shadcn-provided icon approach.
 
 ## Working rules
 

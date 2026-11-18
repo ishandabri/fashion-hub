@@ -8,7 +8,7 @@ This is the initial design baseline. Replace provisional values with product-spe
 
 - Component primitives: shadcn/ui.
 - Theme: light by default.
-- Iconography: shadcn-compatible icons where available; Lucide as the fallback set.
+- Iconography: use the shadcn icon approach consistently.
 - Visual character: minimalistic, calm, editorial, and content-led.
 
 ## Design principles
