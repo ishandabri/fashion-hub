@@ -1,46 +1,42 @@
 # UI/UX Guidelines
 
-## Direction
+## Experience goal
 
-Fashion Hub should feel light, minimal, modern, and content-first. The interface should give visual prominence to fashion content while keeping navigation and actions obvious.
+Make daily work fast and obvious for a nontechnical shop owner. The interface should feel calm, lightweight, and trustworthy while making financial state and inventory health easy to understand.
 
-The product is a mobile-first progressive web app. Core flows must work comfortably on small touch screens and remain useful when launched from an installed PWA surface.
+## Navigation
 
-## Foundations
+- Mobile: fixed bottom navigation with Dashboard, Entries, and Inventory.
+- Desktop: compact sidebar or top navigation.
+- Use icon plus label, visible active state, safe-area padding, and minimum 44px touch targets.
+- Keep content clear of the fixed mobile navigation.
+- Settings, import/export, profile, and administration belong in secondary routes, dialogs, drawers, or a settings menu.
 
-- Build with shadcn/ui components and design tokens.
-- Use a light theme as the default.
-- Prefer whitespace, clear hierarchy, restrained borders, and subtle elevation.
-- Use the shadcn icon approach consistently.
-- Icons should support nearby labels or accessible names; do not use unexplained icon-only controls.
+## Core flows
 
-## Interaction principles
-
-- Make the primary action visually clear on every meaningful screen.
-- Keep navigation predictable and preserve context after actions.
-- Provide loading, empty, success, and error states for data-driven views.
-- Use confirmation for destructive or difficult-to-reverse actions.
-- Favor inline validation and helpful recovery guidance.
-- Design for keyboard navigation, visible focus, readable contrast, and touch-friendly targets.
+- Daily sales: date and total amount; default to today in Asia/Kolkata; one record per date; edit existing dates instead of duplicating.
+- Inventory: rapid three-field item entry; preserve the last purchase date after save; never repeat purchase price automatically.
+- Mark sold: confirm item details and sale date; validate chronology; never create revenue automatically.
+- Return or reverse: preserve original events, require confirmation, update historical reports, and explain that daily sales must be corrected separately.
+- Expenses: use tabs for Sales, Recurring Expenses, and Other Expenses.
 
 ## Responsive behavior
 
-- Design and validate mobile-first, then enhance for larger screens.
-- Avoid horizontal scrolling for primary content.
-- Preserve the content hierarchy when layouts collapse.
-- Treat image cropping, grids, filters, and navigation as explicit responsive decisions.
+- Design and validate mobile first, then enhance for desktop.
+- Use compact item cards or responsive tables on mobile; avoid horizontal scrolling.
+- Keep desktop forms readable with a shared form max width of 560px.
+- Preserve content hierarchy when grids and tables collapse.
+- Respect iOS safe areas, viewport behavior, touch targets, keyboard navigation, and visible focus.
 
-## PWA experience
+## PWA behavior
 
-- Provide installable app metadata and a suitable app icon set.
-- Support a reliable app shell and clear offline or poor-network states where appropriate.
-- Respect safe areas, touch targets, viewport behavior, and mobile browser conventions.
-- Make navigation and back behavior predictable in both browser and installed contexts.
+- Installable manifest with Store Manager / Store naming, standalone display, theme and background colors, 192px, 512px, and maskable icons.
+- Cache static application assets where appropriate.
+- Do not cache authenticated financial API responses for offline use.
+- Show connection status and a friendly offline screen; disable writes offline and never claim a save succeeded.
+- Retry reads when connectivity returns.
 
-## To define after product context arrives
+## States and accessibility
 
-- Information architecture and navigation model.
-- Key screens and critical flows.
-- Typography scale, color tokens, spacing, radii, and elevation.
-- Content rules, image ratios, and responsive breakpoints.
+Every data-driven view needs loading, empty, error, success, and provisional-data states. Destructive actions require confirmation. Warnings must be non-blocking unless the action is unsafe. Use accessible labels, semantic controls, keyboard support, clear validation, and color-independent status communication.
 

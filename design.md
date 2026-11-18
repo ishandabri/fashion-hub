@@ -1,42 +1,49 @@
 # Design System
 
-## Status
+## Direction
 
-This is the initial design baseline. Replace provisional values with product-specific decisions as context arrives.
+Minimal, light, neutral, content-first, and editorial. Use whitespace, subtle grey borders, clean cards, minimal shadows, neutral text, and one restrained primary accent. Do not use gradients, glassmorphism, or decorative clutter.
 
-## System choice
+## Foundation
 
-- Component primitives: shadcn/ui.
-- Theme: light by default.
-- Iconography: use the shadcn icon approach consistently.
-- Visual character: minimalistic, calm, editorial, and content-led.
+- Component system: shadcn/ui only.
+- Icons: shadcn-compatible icons only.
+- Typography: clean system font or Inter.
 - Product form: mobile-first progressive web app.
+- Financial figures: tabular numerals.
 
-## Design principles
+## Semantic tokens
 
-1. Let fashion imagery and content lead the composition.
-2. Use hierarchy and spacing before decoration.
-3. Keep surfaces, borders, and shadows subtle.
-4. Make states and actions understandable without relying on color alone.
-5. Favor reusable tokens and variants over one-off styling.
-6. Design for touch and small screens first, while allowing the system to scale gracefully to larger layouts.
+Define all colors through CSS variables and Tailwind theme tokens. Required tokens include `background`, `foreground`, `card`, `card-foreground`, `popover`, `popover-foreground`, `primary`, `primary-foreground`, `secondary`, `secondary-foreground`, `muted`, `muted-foreground`, `accent`, `accent-foreground`, `destructive`, `border`, `input`, `ring`, `chart-1` through `chart-5`, and `radius`.
 
-## Provisional token guidance
+Financial tokens: `financial-positive`, `financial-negative`, `financial-warning`, and `financial-neutral`.
 
-- Use the shadcn semantic color tokens rather than hard-coded colors.
-- Use a restrained neutral surface palette with one intentional accent color once the brand direction is known.
-- Use a compact spacing scale consistently.
-- Use rounded corners and shadows sparingly and consistently.
-- Define type hierarchy before introducing decorative display treatments.
+Never hardcode component-level hex colors.
 
-## Component guidance
+## Layout tokens
 
-Prefer existing shadcn primitives such as Button, Card, Input, Dialog, Sheet, Tabs, Toast, Tooltip, Select, and Skeleton. Add a custom component only when the product concept or repeated composition warrants it.
+- `page-container`: max-width 1280px, centered.
+- `form-container`: max-width 560px.
+- `dialog-container`: responsive, max-width 480px.
+- `table-container`: full available width.
+- Mobile content padding: 16px.
+- Desktop content padding: 24px.
+- Section gap: 24px.
+- Card gap: 16px.
 
-## Open design questions
+## Type scale
 
-- Brand identity and accent color.
-- Font family and editorial/display type needs.
-- Product-card and image treatment.
-- Density preferences for catalog, discovery, and detail views.
+- Page title: 24px semibold.
+- Section title: 18px semibold.
+- Card title: 14px medium.
+- KPI value: 24–30px semibold.
+- Body: 14px.
+- Helper text: 12px.
+- Table values: 14px.
+
+## Shared components
+
+Build and reuse `AppLayout`, `PageHeader`, `PageContainer`, `FormField`, `CurrencyInput`, `DateField`, `SearchField`, `ConfirmDialog`, `KpiCard`, `CurrencyDisplay`, `MonthSelector`, `EmptyState`, `LoadingState`, `ErrorState`, `StatusBadge`, `ResponsiveDataTable`, and `InventoryAgeBadge`.
+
+Use shadcn primitives such as Button, Card, Input, Label, Select, Tabs, Dialog, AlertDialog, Sheet, Popover, Calendar, Table, Badge, Separator, Skeleton, Sonner, DropdownMenu, Tooltip, and Chart where appropriate.
 

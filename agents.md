@@ -1,36 +1,42 @@
 # Agents Guide
 
-## Purpose
+## Mission
 
-This document is the working agreement for anyone—human or AI—developing Fashion Hub.
+Build and maintain a production-ready, mobile-first PWA for a small Indian clothing retailer. The product is a simple daily-management tool for sales, inventory, expenses, P&L, and stock health—not a full ERP, POS, or billing system.
 
-## Current project state
+## Source of truth
 
-- Product context: to be defined as product requirements arrive.
-- Repository: `ishandabri/fashion-hub`.
-- UI foundation: shadcn/ui with a light, minimalistic visual language.
-- Icons: use the shadcn-provided icon approach.
-- Deployment target: containerized deployment.
-- Product form: mobile-first progressive web app (PWA).
+Before changing product behavior or UI, read `prd.md`, `steering.md`, `design.md`, and `ui-ux.md`. Keep all four synchronized whenever requirements, accounting rules, architecture, or interaction patterns change.
 
-## Working rules
+## Non-negotiable conventions
 
-1. Read `prd.md`, `design.md`, `ui-ux.md`, and `steering.md` before making product or interface changes.
-2. Prefer small, composable changes that preserve existing behavior.
-3. Keep accessibility, responsive behavior, and clear empty/loading/error states in scope.
-4. Reuse existing components and tokens before introducing new patterns.
-5. Do not add dependencies without a clear need and a short note in the relevant documentation.
-6. Update the living documents whenever a decision, requirement, flow, or implementation convention changes.
-7. Before handing off work, verify the relevant user flow and report any known gaps.
-8. Build and test the primary experience at mobile sizes first, then enhance for larger screens and installed PWA contexts.
+- Mobile-first responsive PWA; exactly three primary pages: Dashboard, Entries, Inventory.
+- Light, minimalistic shadcn/ui system with semantic CSS variables and reusable components.
+- Use shadcn-compatible icons only. Do not introduce alternate icon libraries.
+- All money is INR and must be calculated exactly using integer paise or equivalent decimal-safe representations.
+- Backend calculations are authoritative; do not duplicate accounting logic in frontend components.
+- Preserve dated records and event history. Never destroy original sale, return, correction, or audit history.
+- Use Asia/Kolkata for business dates and UTC timestamps for system timestamps.
+- Use a local Python `venv` for Python development. The deployment container is the production isolation boundary; do not nest a `venv` in production images by default.
+- Use Docker Compose for Raspberry Pi 4 ARM64 deployment with persistent SQLite storage and backups.
 
-## Environment conventions
+## Engineering rules
 
-- Use a local Python `venv` for Python development and tooling when Python is part of the stack.
-- Keep dependency declarations reproducible and committed.
-- Treat the deployment container as the production isolation boundary; do not nest a Python `venv` inside the container unless a concrete runtime constraint requires it.
+1. Centralize business rules in backend services and reporting queries.
+2. Use database transactions for inventory state changes and imports.
+3. Use optimistic concurrency with version numbers for edits.
+4. Keep forms small, accessible, touch-friendly, and reusable.
+5. Include loading, empty, error, offline, and confirmation states.
+6. Do not use mock data or localStorage for production functionality.
+7. Do not add modules, paid services, or infrastructure that the PRD does not require.
+8. Run type checks, linting, relevant tests, and a production build after changes.
+9. Update documentation before implementation when an assumption is needed.
 
-## Documentation maintenance
+## Implementation order
 
-When new product context is provided, update `prd.md` first, then reconcile `design.md`, `ui-ux.md`, and `steering.md`. Update this file when the development workflow or project-wide conventions change.
+1. Foundation and authentication.
+2. Inventory, events, import, and ageing.
+3. Daily sales and expenses.
+4. Reports and dashboard.
+5. PWA, security hardening, backups, Docker deployment, tests, and documentation.
 
