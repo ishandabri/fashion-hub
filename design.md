@@ -10,6 +10,7 @@ This is the initial design baseline. Replace provisional values with product-spe
 - Theme: light by default.
 - Iconography: use the shadcn icon approach consistently.
 - Visual character: minimalistic, calm, editorial, and content-led.
+- Product form: mobile-first progressive web app.
 
 ## Design principles
 
@@ -18,6 +19,7 @@ This is the initial design baseline. Replace provisional values with product-spe
 3. Keep surfaces, borders, and shadows subtle.
 4. Make states and actions understandable without relying on color alone.
 5. Favor reusable tokens and variants over one-off styling.
+6. Design for touch and small screens first, while allowing the system to scale gracefully to larger layouts.
 
 ## Provisional token guidance
 

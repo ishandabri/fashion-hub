@@ -11,6 +11,7 @@ This document is the working agreement for anyone—human or AI—developing Fas
 - UI foundation: shadcn/ui with a light, minimalistic visual language.
 - Icons: use the shadcn-provided icon approach.
 - Deployment target: containerized deployment.
+- Product form: mobile-first progressive web app (PWA).
 
 ## Working rules
 
@@ -21,6 +22,7 @@ This document is the working agreement for anyone—human or AI—developing Fas
 5. Do not add dependencies without a clear need and a short note in the relevant documentation.
 6. Update the living documents whenever a decision, requirement, flow, or implementation convention changes.
 7. Before handing off work, verify the relevant user flow and report any known gaps.
+8. Build and test the primary experience at mobile sizes first, then enhance for larger screens and installed PWA contexts.
 
 ## Environment conventions
 

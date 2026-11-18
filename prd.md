@@ -8,6 +8,8 @@ Draft foundation. Product requirements will be populated and refined as context 
 
 **Fashion Hub** — the specific audience, problem, and product promise are not yet defined.
 
+The product will be a mobile-first progressive web app (PWA), with responsive enhancement for larger screens and an installable app experience.
+
 ## Product hypothesis
 
 Fashion Hub will help a defined audience discover, organize, evaluate, or act on fashion-related content in a focused and visually clear experience. This hypothesis must be validated and replaced with the user’s product context.
@@ -51,6 +53,7 @@ To be defined. Candidate categories include activation, task completion, discove
 ## Technical delivery constraint
 
 - The developed application will be deployed in a container.
+- The application must support progressive web app delivery, including installability and appropriate offline or poor-network states.
 - When Python is part of the implementation, local development and tooling should use an isolated `venv`; production containers should use the container environment directly unless a specific constraint requires otherwise.
 
 ## Open questions

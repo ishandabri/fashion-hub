@@ -4,6 +4,8 @@
 
 Fashion Hub should feel light, minimal, modern, and content-first. The interface should give visual prominence to fashion content while keeping navigation and actions obvious.
 
+The product is a mobile-first progressive web app. Core flows must work comfortably on small touch screens and remain useful when launched from an installed PWA surface.
+
 ## Foundations
 
 - Build with shadcn/ui components and design tokens.
@@ -23,10 +25,17 @@ Fashion Hub should feel light, minimal, modern, and content-first. The interface
 
 ## Responsive behavior
 
-- Design mobile-first, then enhance for larger screens.
+- Design and validate mobile-first, then enhance for larger screens.
 - Avoid horizontal scrolling for primary content.
 - Preserve the content hierarchy when layouts collapse.
 - Treat image cropping, grids, filters, and navigation as explicit responsive decisions.
+
+## PWA experience
+
+- Provide installable app metadata and a suitable app icon set.
+- Support a reliable app shell and clear offline or poor-network states where appropriate.
+- Respect safe areas, touch targets, viewport behavior, and mobile browser conventions.
+- Make navigation and back behavior predictable in both browser and installed contexts.
 
 ## To define after product context arrives
 
