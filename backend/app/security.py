@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from secrets import token_urlsafe
+from uuid import UUID
 
 from argon2 import PasswordHasher
 from fastapi import Depends, HTTPException, Request, status
@@ -40,7 +41,7 @@ def current_user(request: Request, db: Session = Depends(get_db)) -> User:
     record = _sessions.get(token or "")
     if not record or record[1] <= datetime.now(timezone.utc):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication required")
-    user = db.scalar(select(User).where(User.id == record[0], User.is_active.is_(True)))
+    user = db.scalar(select(User).where(User.id == UUID(record[0]), User.is_active.is_(True)))
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication required")
     return user
