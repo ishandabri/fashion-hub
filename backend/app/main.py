@@ -149,11 +149,15 @@ def list_sales(month: str | None = Query(default=None, pattern=r"^\d{4}-\d{2}$")
 
 @app.post("/api/v1/sales", response_model=DailySaleResponse, status_code=201)
 def create_sale(payload: DailySaleCreate, db: Session = Depends(get_db), _user: User = Depends(current_user)):
-    if db.scalar(select(DailySale).where(DailySale.sale_date == payload.sale_date)):
+    if db.scalar(select(DailySale).where(DailySale.sale_date == payload.sale_date, DailySale.deleted_at.is_(None))):
         raise HTTPException(status_code=409, detail="A sales record already exists for this date")
     sale = DailySale(sale_date=payload.sale_date, amount_paise=payload.amount_paise)
     db.add(sale)
-    db.flush()
+    try:
+        db.flush()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=409, detail="A sales record already exists for this date") from None
     db.add(AuditLog(entity_type="daily_sale", entity_id=str(sale.id), action="CREATE", new_values_json=json.dumps(payload.model_dump(mode="json"))))
     db.commit()
     db.refresh(sale)
@@ -169,7 +173,7 @@ def update_sale(sale_id: UUID, payload: DailySaleCreate, db: Session = Depends(g
         raise HTTPException(status_code=409, detail="Deleted sales records cannot be edited")
     if payload.expected_version is not None and payload.expected_version != sale.version:
         raise HTTPException(status_code=409, detail="Sales record changed elsewhere")
-    existing = db.scalar(select(DailySale).where(DailySale.sale_date == payload.sale_date, DailySale.id != sale_id))
+    existing = db.scalar(select(DailySale).where(DailySale.sale_date == payload.sale_date, DailySale.id != sale_id, DailySale.deleted_at.is_(None)))
     if existing:
         raise HTTPException(status_code=409, detail="A sales record already exists for this date")
     sale.sale_date = payload.sale_date

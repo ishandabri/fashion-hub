@@ -22,8 +22,13 @@ def test_daily_sales_duplicate_and_negative_validation():
     with TestClient(app) as client:
         login(client)
         payload = {"sale_date": "2026-11-19", "amount_paise": 125000}
-        assert client.post("/api/v1/sales", json=payload).status_code == 201
+        created = client.post("/api/v1/sales", json=payload)
+        assert created.status_code == 201
         assert client.post("/api/v1/sales", json=payload).status_code == 409
+        assert client.delete(f"/api/v1/sales/{created.json()['id']}").status_code == 204
+        recreated = client.post("/api/v1/sales", json={**payload, "amount_paise": 150000})
+        assert recreated.status_code == 201
+        assert client.get("/api/v1/sales?month=2026-11").json() == [recreated.json()]
         assert client.post("/api/v1/sales", json={**payload, "sale_date": "2026-11-20", "amount_paise": -1}).status_code == 422
 
 

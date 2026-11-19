@@ -3,7 +3,7 @@ from decimal import Decimal
 from enum import StrEnum
 from uuid import UUID, uuid4
 
-from sqlalchemy import Date, DateTime, ForeignKey, Index, Integer, String, Text, func
+from sqlalchemy import Date, DateTime, ForeignKey, Index, Integer, String, Text, func, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .db import Base
@@ -53,8 +53,16 @@ class LoginAttempt(Base):
 
 class DailySale(Base):
     __tablename__ = "daily_sales"
+    __table_args__ = (
+        Index(
+            "uq_daily_sales_active_date",
+            "sale_date",
+            unique=True,
+            sqlite_where=text("deleted_at IS NULL"),
+        ),
+    )
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
-    sale_date: Mapped[date] = mapped_column(Date, unique=True, index=True)
+    sale_date: Mapped[date] = mapped_column(Date, index=True)
     amount_paise: Mapped[int] = mapped_column(Integer)
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     deleted_by: Mapped[UUID | None] = mapped_column(ForeignKey("users.id"), nullable=True)
