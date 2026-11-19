@@ -1,5 +1,7 @@
 from contextlib import asynccontextmanager
 import calendar
+import base64
+import json
 from datetime import date, datetime
 from pathlib import Path
 from uuid import UUID
@@ -19,6 +21,7 @@ from .schemas import (
     DailySaleResponse,
     EventResponse,
     InventoryCreate,
+    InventoryPage,
     InventoryResponse,
     LoginRequest,
     ReturnRequest,
@@ -182,14 +185,40 @@ def create_other_expense(payload: OtherExpenseCreate, db: Session = Depends(get_
     return expense
 
 
-@app.get("/api/v1/inventory", response_model=list[InventoryResponse])
-def list_inventory(status_filter: str | None = Query(default=None, alias="status"), search: str | None = None, db: Session = Depends(get_db), _user: User = Depends(current_user)):
-    query = select(InventoryItem).order_by(InventoryItem.purchase_date.desc())
+@app.get("/api/v1/inventory", response_model=InventoryPage)
+def list_inventory(
+    status_filter: str | None = Query(default=None, alias="status"),
+    search: str | None = None,
+    cursor: str | None = None,
+    limit: int = Query(default=25, ge=1, le=25),
+    db: Session = Depends(get_db),
+    _user: User = Depends(current_user),
+):
+    query = select(InventoryItem).order_by(InventoryItem.purchase_date.desc(), InventoryItem.id.desc())
     if status_filter:
         query = query.where(InventoryItem.current_status == status_filter)
-    if search:
-        query = query.where(InventoryItem.item_code_normalized.contains(" ".join(search.split()).lower()))
-    return list(db.scalars(query.limit(500)).all())
+    normalized_search = " ".join(search.split()).casefold() if search else ""
+    if normalized_search:
+        query = query.where(InventoryItem.item_code_normalized.startswith(normalized_search))
+    if cursor:
+        try:
+            decoded = json.loads(base64.urlsafe_b64decode(cursor.encode()).decode())
+            cursor_date = date.fromisoformat(decoded["purchase_date"])
+            cursor_id = UUID(decoded["id"])
+        except (ValueError, KeyError, TypeError, json.JSONDecodeError):
+            raise HTTPException(status_code=400, detail="Invalid inventory cursor")
+        query = query.where(
+            (InventoryItem.purchase_date < cursor_date)
+            | ((InventoryItem.purchase_date == cursor_date) & (InventoryItem.id < cursor_id))
+        )
+    items = list(db.scalars(query.limit(limit + 1)).all())
+    has_more = len(items) > limit
+    items = items[:limit]
+    next_cursor = None
+    if has_more and items:
+        last = items[-1]
+        next_cursor = base64.urlsafe_b64encode(json.dumps({"purchase_date": last.purchase_date.isoformat(), "id": str(last.id)}).encode()).decode()
+    return InventoryPage(items=items, next_cursor=next_cursor, has_more=has_more)
 
 
 @app.post("/api/v1/inventory", response_model=InventoryResponse, status_code=201)

@@ -50,6 +50,12 @@ class InventoryResponse(InventoryCreate):
     created_at: datetime
 
 
+class InventoryPage(BaseModel):
+    items: list[InventoryResponse]
+    next_cursor: str | None = None
+    has_more: bool
+
+
 class EventResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: UUID

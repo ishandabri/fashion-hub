@@ -52,6 +52,22 @@ def test_inventory_date_rules():
         assert client.post(f"/api/v1/inventory/{item['id']}/sell", json={"sold_date": future}).status_code == 422
 
 
+def test_inventory_search_and_cursor_pagination():
+    with TestClient(app) as client:
+        login(client)
+        for index in range(27):
+            response = client.post("/api/v1/inventory", json={"item_code": f"ABC-{index:03d}", "purchase_date": "2026-11-01", "purchase_price_paise": 10000})
+            assert response.status_code == 201
+        first = client.get("/api/v1/inventory?search=abc&limit=25")
+        assert first.status_code == 200
+        first_page = first.json()
+        assert len(first_page["items"]) == 25
+        assert first_page["has_more"] is True
+        second = client.get(f"/api/v1/inventory?search=ABC&limit=25&cursor={first_page['next_cursor']}")
+        assert len(second.json()["items"]) == 2
+        assert {item["item_code"] for item in second.json()["items"]} == {f"ABC-{index:03d}" for index in range(27)} - {item["item_code"] for item in first_page["items"]}
+
+
 def test_expenses_and_dashboard_include_expense_totals():
     with TestClient(app) as client:
         login(client)

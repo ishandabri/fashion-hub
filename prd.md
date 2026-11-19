@@ -40,6 +40,8 @@ Mark sold validates that the item is in stock, sale date is not before purchase 
 
 Support CSV import with validation, duplicate detection, preview, row errors, transactional commit, optional status and sold date, and an explicit warning when historical records are incomplete.
 
+Inventory listing supports debounced server-side prefix search by normalized item code and infinite scroll in batches of 25. The backend uses cursor-based continuation internally; the UI has no page controls and appends results as the user approaches the end of the list.
+
 ## Accounting rules
 
 All money is INR. Store monetary values as integer paise. Use backend-derived reports as the authority; never store calculated monthly profit as authoritative.

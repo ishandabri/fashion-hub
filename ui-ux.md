@@ -16,6 +16,7 @@ Make daily work fast and obvious for a nontechnical shop owner. The interface sh
 
 - Daily sales: date and total amount; default to today in Asia/Kolkata; one record per date; edit existing dates instead of duplicating.
 - Inventory: rapid three-field item entry; preserve the last purchase date after save; never repeat purchase price automatically.
+- Inventory search: place an item-code search field at the top of the page, search as typed with a short debounce, show prefix matches from the server, and append additional records automatically as the user scrolls. Use loading, empty, no-match, and error states.
 - Mark sold: confirm item details and sale date; validate chronology; never create revenue automatically.
 - Return or reverse: preserve original events, require confirmation, update historical reports, and explain that daily sales must be corrected separately.
 - Expenses: use tabs for Sales, Recurring Expenses, and Other Expenses.
