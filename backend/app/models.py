@@ -3,7 +3,7 @@ from decimal import Decimal
 from enum import StrEnum
 from uuid import UUID, uuid4
 
-from sqlalchemy import Date, DateTime, ForeignKey, Integer, Numeric, String, Text, UniqueConstraint, func
+from sqlalchemy import Date, DateTime, ForeignKey, Index, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .db import Base
@@ -33,11 +33,31 @@ class User(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
 
 
+class SessionRecord(Base):
+    __tablename__ = "sessions"
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    token_hash: Mapped[str] = mapped_column(String(128), unique=True, index=True)
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"), index=True)
+    csrf_token_hash: Mapped[str] = mapped_column(String(128))
+    expires_at: Mapped[datetime] = mapped_column(DateTime, index=True)
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+
+class LoginAttempt(Base):
+    __tablename__ = "login_attempts"
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    key: Mapped[str] = mapped_column(String(255), index=True)
+    attempted_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), index=True)
+
+
 class DailySale(Base):
     __tablename__ = "daily_sales"
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     sale_date: Mapped[date] = mapped_column(Date, unique=True, index=True)
     amount_paise: Mapped[int] = mapped_column(Integer)
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    deleted_by: Mapped[UUID | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     version: Mapped[int] = mapped_column(Integer, default=1)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
@@ -60,6 +80,10 @@ class InventoryItem(Base):
 
 class InventoryEvent(Base):
     __tablename__ = "inventory_events"
+    __table_args__ = (
+        Index("ix_inventory_events_item_history", "inventory_item_id", "event_date", "created_at", "id"),
+        Index("ix_inventory_events_date_type", "event_date", "event_type"),
+    )
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     inventory_item_id: Mapped[UUID] = mapped_column(ForeignKey("inventory_items.id"), index=True)
     event_type: Mapped[str] = mapped_column(String(30))
@@ -91,6 +115,7 @@ class RecurringExpense(Base):
 
 class RecurringExpenseVersion(Base):
     __tablename__ = "recurring_expense_versions"
+    __table_args__ = (Index("ix_recurring_versions_effective_range", "recurring_expense_id", "effective_start_month", "effective_end_month"),)
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     recurring_expense_id: Mapped[UUID] = mapped_column(ForeignKey("recurring_expenses.id"), index=True)
     amount_paise: Mapped[int] = mapped_column(Integer)
@@ -107,6 +132,8 @@ class OtherExpense(Base):
     description: Mapped[str] = mapped_column(String(255))
     amount_paise: Mapped[int] = mapped_column(Integer)
     version: Mapped[int] = mapped_column(Integer, default=1)
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    deleted_by: Mapped[UUID | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
 
@@ -121,4 +148,15 @@ class AuditLog(Base):
     new_values_json: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     user_id: Mapped[UUID | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+
+
+class ImportBatch(Base):
+    __tablename__ = "import_batches"
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    filename: Mapped[str] = mapped_column(String(255))
+    total_rows: Mapped[int] = mapped_column(Integer, default=0)
+    committed_rows: Mapped[int] = mapped_column(Integer, default=0)
+    status: Mapped[str] = mapped_column(String(30), default="PREVIEW")
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 

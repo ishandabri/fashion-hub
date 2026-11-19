@@ -1,7 +1,9 @@
 from datetime import date, datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+
+MAX_SAFE_PAISE = 9_007_199_254_740_991
 
 
 class LoginRequest(BaseModel):
@@ -18,7 +20,8 @@ class UserResponse(BaseModel):
 
 class DailySaleCreate(BaseModel):
     sale_date: date
-    amount_paise: int = Field(ge=0)
+    amount_paise: int = Field(ge=0, le=MAX_SAFE_PAISE)
+    expected_version: int | None = Field(default=None, ge=1)
 
 
 class DailySaleResponse(DailySaleCreate):
@@ -30,7 +33,7 @@ class DailySaleResponse(DailySaleCreate):
 class InventoryCreate(BaseModel):
     item_code: str = Field(min_length=1, max_length=120)
     purchase_date: date
-    purchase_price_paise: int = Field(ge=0)
+    purchase_price_paise: int = Field(ge=0, le=MAX_SAFE_PAISE)
     notes: str | None = None
 
     @field_validator("item_code")
@@ -48,6 +51,7 @@ class InventoryResponse(InventoryCreate):
     current_status: str
     version: int
     created_at: datetime
+    age_days: int | None = None
 
 
 class InventoryPage(BaseModel):
@@ -67,11 +71,19 @@ class EventResponse(BaseModel):
 
 class SellRequest(BaseModel):
     sold_date: date
+    expected_version: int | None = Field(default=None, ge=1)
 
 
 class ReturnRequest(BaseModel):
     return_date: date
     reason: str | None = None
+    expected_version: int | None = Field(default=None, ge=1)
+
+
+class ReverseSaleRequest(BaseModel):
+    reversal_date: date
+    reason: str = Field(min_length=1, max_length=500)
+    expected_version: int | None = Field(default=None, ge=1)
 
 
 class DashboardResponse(BaseModel):
@@ -88,14 +100,30 @@ class DashboardResponse(BaseModel):
     closing_inventory_paise: int
     unsold_item_count: int
     provisional: bool
+    trend: list[dict] = []
+    comparisons: dict = {}
+    expense_breakdown: list[dict] = []
+    ageing_buckets: list[dict] = []
+    reconciliation: dict = {}
+    completeness: dict = {}
 
 
 class RecurringExpenseCreate(BaseModel):
     expense_name: str = Field(min_length=1, max_length=120)
     category: str = Field(default="Miscellaneous", min_length=1, max_length=100)
-    amount_paise: int = Field(ge=0)
+    amount_paise: int = Field(ge=0, le=MAX_SAFE_PAISE)
     effective_start_month: date
     effective_end_month: date | None = None
+
+    @model_validator(mode="after")
+    def validate_effective_months(self):
+        if self.effective_start_month.day != 1:
+            raise ValueError("Effective start month must be the first day of a month")
+        if self.effective_end_month and self.effective_end_month.day != 1:
+            raise ValueError("Effective end month must be the first day of a month")
+        if self.effective_end_month and self.effective_end_month < self.effective_start_month:
+            raise ValueError("End month cannot precede start month")
+        return self
 
 
 class RecurringExpenseResponse(RecurringExpenseCreate):
@@ -108,7 +136,10 @@ class OtherExpenseCreate(BaseModel):
     expense_date: date
     category: str = Field(default="Miscellaneous", min_length=1, max_length=100)
     description: str = Field(min_length=1, max_length=255)
-    amount_paise: int = Field(ge=0)
+    amount_paise: int = Field(ge=0, le=MAX_SAFE_PAISE)
+
+class OtherExpenseUpdate(OtherExpenseCreate):
+    expected_version: int = Field(ge=1)
 
 
 class OtherExpenseResponse(OtherExpenseCreate):

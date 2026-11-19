@@ -11,6 +11,7 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -e ".\backend[test]"
 Copy-Item .env.example .env
+alembic -c backend/alembic.ini upgrade head
 uvicorn app.main:app --app-dir backend --reload --port 8000
 ```
 
@@ -55,6 +56,8 @@ The suite covers authentication, dashboard/P&L visibility, primary navigation, e
 cp .env.example .env
 docker compose up -d --build
 ```
+
+The API container applies Alembic migrations before starting. Back up `data/store.db` and verify the backup before deploying a schema change. A migration will stop without changing data if it finds overlapping or non-month-start recurring-expense versions; correct those records deliberately before retrying.
 
 The frontend binds to `127.0.0.1:6001`. Configure the host-managed Cloudflare Tunnel to route the HTTPS hostname to that local address. Keep tunnel credentials outside Git.
 

@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+from uuid import UUID
 
 from fastapi.testclient import TestClient
 
@@ -52,6 +53,21 @@ def test_inventory_date_rules():
         assert client.post(f"/api/v1/inventory/{item['id']}/sell", json={"sold_date": future}).status_code == 422
 
 
+def test_future_purchase_date_is_rejected():
+    with TestClient(app) as client:
+        login(client)
+        future = (date.today() + timedelta(days=1)).isoformat()
+        response = client.post("/api/v1/inventory", json={"item_code": "FUTURE-001", "purchase_date": future, "purchase_price_paise": 10000})
+        assert response.status_code == 422
+
+
+def test_recurring_expense_requires_month_start():
+    with TestClient(app) as client:
+        login(client)
+        response = client.post("/api/v1/recurring-expenses", json={"expense_name": "Rent", "amount_paise": 10000, "effective_start_month": "2026-11-02"})
+        assert response.status_code == 422
+
+
 def test_inventory_search_and_cursor_pagination():
     with TestClient(app) as client:
         login(client)
@@ -99,4 +115,19 @@ def test_dashboard_closing_inventory_uses_selected_month_end():
         november = client.get("/api/v1/reports/dashboard?month=2026-11").json()
         assert october["closing_inventory_paise"] == 45000
         assert november["closing_inventory_paise"] == 0
+
+
+def test_dashboard_includes_historical_recurring_expense_after_it_is_paused():
+    with TestClient(app) as client:
+        login(client)
+        created = client.post("/api/v1/recurring-expenses", json={"expense_name": "Rent", "amount_paise": 10000, "effective_start_month": "2026-11-01"})
+        assert created.status_code == 201
+        from app.db import SessionLocal
+        from app.models import RecurringExpense
+        with SessionLocal() as db:
+            expense = db.get(RecurringExpense, UUID(created.json()["id"]))
+            expense.is_active = False
+            db.commit()
+        dashboard = client.get("/api/v1/reports/dashboard?month=2026-11").json()
+        assert dashboard["recurring_expenses_paise"] == 10000
 
