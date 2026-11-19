@@ -12,7 +12,7 @@ The primary user is a nontechnical shop owner using one secure shared shop login
 
 ### Primary pages
 
-1. **Dashboard** — current-month P&L, trends, comparisons, data completeness, and inventory ageing.
+1. **Dashboard** — current-month P&L, trends, comparisons, and inventory ageing.
 2. **Entries** — Sales, Recurring Expenses, and Other Expenses tabs.
 3. **Inventory** — item-level stock, sale/return events, ageing, import, and history.
 
@@ -63,7 +63,7 @@ Returned inventory affects the return period. A February sale and March return p
 
 Default to the current calendar month in Asia/Kolkata with month/year selection. Show Total Sales, COGS, Gross Profit, Net Operating Profit, Closing Inventory Value, and Gross Profit Margin. Optional metrics include net margin, purchases, expenses, unsold count, and 90+ day stock.
 
-Also show a monthly P&L statement, provisional indicator for the current month, last-12-month sales/gross-profit/net-profit trend, expense breakdown, 0–30/31–60/61–90/90+ ageing buckets, month-over-month comparisons, and nonintrusive completeness warnings. Do not treat missing daily sales as zero without explicit entry.
+Also show a monthly P&L statement, provisional indicator for the current month, last-12-month sales/gross-profit/net-profit trend, expense breakdown, 0–30/31–60/61–90/90+ ageing buckets, and month-over-month comparisons. Explicit zero-sales entries remain available when the shop owner knows a day had no sales; unrecorded dates are not treated as zero.
 
 ## INR formatting
 

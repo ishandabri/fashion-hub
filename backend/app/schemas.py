@@ -105,7 +105,6 @@ class DashboardResponse(BaseModel):
     expense_breakdown: list[dict] = []
     ageing_buckets: list[dict] = []
     reconciliation: dict = {}
-    completeness: dict = {}
 
 
 class RecurringExpenseCreate(BaseModel):
