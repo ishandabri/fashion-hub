@@ -86,4 +86,4 @@ The systemd service expects the application at `/home/ishan/projects/fashion-hub
 
 ## Current implementation status
 
-The repository includes the initial runnable foundation, authentication bootstrap, daily sales, inventory add/sell/return flows, dashboard basics, PWA metadata, Docker configuration, and systemd backup/restore-verification units. Recurring expenses, other expenses, historical reporting, import/export, and expanded test coverage remain next implementation phases.
+The repository includes the initial runnable foundation, authentication bootstrap, daily sales, recurring and other expenses, effective-month recurring-expense pauses, inventory add/sell/return flows, dashboard basics, PWA metadata, Docker configuration, and systemd backup/restore-verification units. Historical reporting, import/export, and expanded test coverage remain next implementation phases.

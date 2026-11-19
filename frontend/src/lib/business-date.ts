@@ -14,6 +14,7 @@ export function indiaBusinessDate(now = new Date()): string {
   return `${value.year}-${value.month}-${value.day}`;
 }
 
-export function indiaBusinessMonth(now = new Date()): string {
+export function indiaBusinessMonth(now: Date | string = new Date()): string {
+  if (typeof now === "string") return indiaBusinessMonth();
   return indiaBusinessDate(now).slice(0, 7);
 }

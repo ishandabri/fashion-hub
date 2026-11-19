@@ -122,17 +122,27 @@ def test_dashboard_closing_inventory_uses_selected_month_end():
         assert november["closing_inventory_paise"] == 0
 
 
-def test_dashboard_includes_historical_recurring_expense_after_it_is_paused():
+def test_pausing_recurring_expense_stops_future_months_and_preserves_history():
     with TestClient(app) as client:
         login(client)
         created = client.post("/api/v1/recurring-expenses", json={"expense_name": "Rent", "amount_paise": 10000, "effective_start_month": "2026-11-01"})
         assert created.status_code == 201
-        from app.db import SessionLocal
-        from app.models import RecurringExpense
-        with SessionLocal() as db:
-            expense = db.get(RecurringExpense, UUID(created.json()["id"]))
-            expense.is_active = False
-            db.commit()
-        dashboard = client.get("/api/v1/reports/dashboard?month=2026-11").json()
-        assert dashboard["recurring_expenses_paise"] == 10000
+        paused = client.post(f"/api/v1/recurring-expenses/{created.json()['id']}/pause", json={"pause_from_month": "2026-12-01"})
+        assert paused.status_code == 200
+        assert paused.json()["is_active"] is False
+        assert paused.json()["paused_from_month"] == "2026-12-01"
+        november = client.get("/api/v1/reports/dashboard?month=2026-11").json()
+        december = client.get("/api/v1/reports/dashboard?month=2026-12").json()
+        assert november["recurring_expenses_paise"] == 10000
+        assert december["recurring_expenses_paise"] == 0
+
+
+def test_editing_recurring_expense_creates_salary_version():
+    with TestClient(app) as client:
+        login(client)
+        created = client.post("/api/v1/recurring-expenses", json={"expense_name": "Salary", "amount_paise": 10000, "effective_start_month": "2026-11-01"}).json()
+        edited = client.patch(f"/api/v1/recurring-expenses/{created['id']}", json={"expense_name": "Salary", "amount_paise": 15000, "effective_start_month": "2026-12-01"})
+        assert edited.status_code == 200
+        assert client.get("/api/v1/reports/dashboard?month=2026-11").json()["recurring_expenses_paise"] == 10000
+        assert client.get("/api/v1/reports/dashboard?month=2026-12").json()["recurring_expenses_paise"] == 15000
 

@@ -125,10 +125,22 @@ class RecurringExpenseCreate(BaseModel):
         return self
 
 
+class RecurringExpensePause(BaseModel):
+    pause_from_month: date
+
+    @field_validator("pause_from_month")
+    @classmethod
+    def validate_pause_month(cls, value: date) -> date:
+        if value.day != 1:
+            raise ValueError("Pause month must be the first day of a month")
+        return value
+
+
 class RecurringExpenseResponse(RecurringExpenseCreate):
     model_config = ConfigDict(from_attributes=True)
     id: UUID
     is_active: bool
+    paused_from_month: date | None = None
 
 
 class OtherExpenseCreate(BaseModel):
