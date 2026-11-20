@@ -7,7 +7,7 @@ rule must apply only to active rows.
 from alembic import op
 
 
-revision = "20261120_05"
+revision = "20261120_05_active_sales_date_uniqueness"
 down_revision = "20261119_04_other_expense_soft_delete"
 branch_labels = None
 depends_on = None
