@@ -1,23 +1,43 @@
 import { expect, test } from "@playwright/test";
 
+const e2eUsername = process.env.E2E_USERNAME ?? "hema";
+const e2ePassword = process.env.E2E_PASSWORD ?? "hema1234";
+
 test.beforeEach(async ({ page }) => {
   await page.goto("/", { waitUntil: "networkidle" });
-  await page.getByLabel("Username").fill("owner");
-  await page.getByLabel("Password").fill("change-this-password");
+  await page.getByLabel("Username").fill(e2eUsername);
+  await page.getByLabel("Password").fill(e2ePassword);
   await page.getByRole("button", { name: "Sign in" }).click();
   await expect(page).toHaveURL(/dashboard/);
 });
 
 test("shows dashboard KPIs and P&L", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
-  await expect(page.getByText("Monthly P&L")).toBeVisible();
+  await expect(page.getByText("Sales", { exact: true })).toBeVisible();
+  await expect(page.getByText("Operating profit", { exact: true })).toBeVisible();
+  await expect(page.getByText("Unsold items", { exact: true })).toHaveCount(0);
+  await expect(page.getByText("Needs attention", { exact: true })).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Inventory ageing" })).toBeVisible();
+  await expect(page.getByText("0–30 days", { exact: true })).toBeVisible();
+  await expect(page.getByText("90+ days", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "12-month P&L" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Show detailed reports" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Monthly P&L" })).toHaveCount(0);
+});
+
+test("shows the compact 12-month P&L chart in detailed reports", async ({ page }) => {
+  await page.getByRole("button", { name: "Show detailed reports" }).click();
+  await expect(page.getByRole("heading", { name: "12-month P&L" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Monthly P&L" })).toBeVisible();
   await expect(page.getByText("Sales revenue")).toBeVisible();
+  await expect(page.getByRole("img", { name: "12-month net operating profit bar chart" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Inventory ageing" })).toHaveCount(1);
 });
 
 test("navigates between primary pages", async ({ page }) => {
   await page.getByRole("link", { name: "Entries" }).click();
   await expect(page.getByRole("heading", { name: "Entries" })).toBeVisible();
-  await page.getByRole("button", { name: "Recurring expenses" }).click();
+  await page.getByRole("tab", { name: "Recurring expenses" }).click();
   await expect(page.getByRole("heading", { name: "Add recurring expense" })).toBeVisible();
   await page.getByRole("link", { name: "Inventory" }).click();
   await expect(page.getByRole("heading", { name: "Inventory", exact: true })).toBeVisible();

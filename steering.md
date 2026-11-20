@@ -19,6 +19,7 @@ This document records project-wide decisions. Update it when a decision changes.
 | Offline mode | Cache static assets only; financial data entry is online-only in v1 |
 | Python environment | Use local `venv` for Python development; do not nest it in production containers by default |
 | Documentation | Keep PRD, UX, design, steering, and agent guidance current as the app evolves |
+| Dashboard hierarchy | Right-aligned month control in the title row; minimal summary with Sales and Operating profit cards, one inventory-ageing visual, the 12-month chart, and expandable detailed reports; no unsold-item KPI or ageing attention panel |
 
 ## Explicit non-goals
 

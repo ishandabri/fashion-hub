@@ -234,6 +234,8 @@ function ConnectionStatus({ online }: { online: boolean }) {
       className={`connection ${online ? "connected" : "disconnected"}`}
       role="status"
       aria-live="polite"
+      aria-label={online ? "Online" : "Offline — writes disabled"}
+      title={online ? "Online" : "Offline — writes disabled"}
     >
       {online ? (
         <Wifi size={14} aria-hidden="true" />
@@ -342,9 +344,9 @@ function Layout({ children }: { children: React.ReactNode }) {
         </div>
         <div className="topbar-actions">
           <ConnectionStatus online={online} />
-          <button className="ghost" onClick={() => setConfirm(true)}>
+          <button className="ghost signout-button" aria-label="Sign out" title="Sign out" onClick={() => setConfirm(true)}>
             <LogOut size={16} />
-            Sign out
+            <span className="signout-label">Sign out</span>
           </button>
         </div>
       </header>
@@ -1397,11 +1399,7 @@ function Protected() {
       <Routes>
         <Route
           path="/dashboard"
-          element={
-            <Page title="Dashboard">
-              <DashboardPage />
-            </Page>
-          }
+          element={<DashboardPage />}
         />
         <Route path="/entries" element={<Entries online={online} />} />
         <Route

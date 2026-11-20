@@ -61,9 +61,9 @@ Returned inventory affects the return period. A February sale and March return p
 
 ## Dashboard requirements
 
-Default to the current calendar month in Asia/Kolkata with month/year selection. Show Total Sales, COGS, Gross Profit, Net Operating Profit, Closing Inventory Value, and Gross Profit Margin. Optional metrics include net margin, purchases, expenses, unsold count, and 90+ day stock.
+Default to the current calendar month in Asia/Kolkata with month/year selection in the Dashboard header, right-aligned beside the page title. The minimal dashboard summary shows Sales and Net Operating Profit KPI cards, followed by a compact visual of the existing inventory-ageing values. Do not show an unsold-item KPI or a separate ageing attention panel.
 
-Also show a monthly P&L statement, provisional indicator for the current month, last-12-month sales/gross-profit/net-profit trend, expense breakdown, 0–30/31–60/61–90/90+ ageing buckets, and month-over-month comparisons. Explicit zero-sales entries remain available when the shop owner knows a day had no sales; unrecorded dates are not treated as zero.
+Also show a monthly P&L statement, a provisional indicator for the current month, and expandable detailed reports. The 12-month P&L report uses a compact vertical net-operating-profit bar chart; expense breakdown and reconciliation remain below it. Inventory ageing is shown once above the P&L statement. Explicit zero-sales entries remain available when the shop owner knows a day had no sales; unrecorded dates are not treated as zero.
 
 ## INR formatting
 

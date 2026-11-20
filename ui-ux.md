@@ -4,6 +4,8 @@
 
 Make daily work fast and obvious for a nontechnical shop owner. The interface should feel calm, lightweight, and trustworthy while making financial state and inventory health easy to understand.
 
+Dashboard hierarchy: keep the month control right-aligned in the Dashboard title row; show only Sales and Operating profit KPI cards, followed by inventory ageing and the 12-month P&L chart. Keep the Monthly P&L table, expense breakdown, and reconciliation behind the existing detailed-reports disclosure. Do not show an unsold-items KPI or a separate ageing attention panel.
+
 ## Navigation
 
 - Mobile: fixed bottom navigation with Dashboard, Entries, and Inventory.
@@ -28,6 +30,7 @@ Make daily work fast and obvious for a nontechnical shop owner. The interface sh
 - Use compact item cards or responsive tables on mobile; avoid horizontal scrolling.
 - Keep desktop forms readable with a shared form max width of 560px.
 - Preserve content hierarchy when grids and tables collapse.
+- Keep the 12-month P&L chart at a compact fixed height with abbreviated month labels and exact values available on interaction; it must not require horizontal scrolling.
 - Respect iOS safe areas, viewport behavior, touch targets, keyboard navigation, and visible focus.
 
 ## PWA behavior

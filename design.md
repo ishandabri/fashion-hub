@@ -4,6 +4,8 @@
 
 Minimal, light, neutral, content-first, and editorial. Use whitespace, subtle grey borders, clean cards, minimal shadows, neutral text, and one restrained primary accent. Do not use gradients, glassmorphism, or decorative clutter.
 
+Dashboard visual rule: right-align the compact month control in the title row, then use two summary KPI cards, a compact four-cell inventory-ageing value strip, and a fixed-height vertical bar chart for the 12-month net-operating-profit trend. Reuse semantic financial tokens for chart states and keep all visualizations compact on mobile.
+
 ## Foundation
 
 - Component system: shadcn/ui only.

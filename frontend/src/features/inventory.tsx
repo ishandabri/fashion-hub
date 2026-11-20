@@ -381,7 +381,7 @@ export function InventoryPage({ online }: { online: boolean }) {
                     Mark sold
                   </button>
                 ) : (
-                  <span className="badge">Sold</span>
+                  <span className="badge sold-badge">Sold</span>
                 )}
               </span>
             </div>
