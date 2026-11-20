@@ -11,6 +11,7 @@ frontend/tsconfig.tsbuildinfo
 backups/
 data/test-suite.db
 backend/data/
+data/*.db
 *.db-shm
 *.db-wal
 backend/*.egg-info/
