@@ -1,7 +1,13 @@
 from datetime import date, datetime
-from zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError, reset_tzpath
 
-KOLKATA = ZoneInfo("Asia/Kolkata")
+try:
+    KOLKATA = ZoneInfo("Asia/Kolkata")
+except (ZoneInfoNotFoundError, ValueError):
+    # Some ARM base images ship a broken system zoneinfo file. Fall back to
+    # the pinned Python tzdata package instead of making the API fail startup.
+    reset_tzpath([])
+    KOLKATA = ZoneInfo("Asia/Kolkata")
 
 
 def business_today(now: datetime | None = None) -> date:
