@@ -1,9 +1,21 @@
 from datetime import date, datetime
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 MAX_SAFE_PAISE = 9_007_199_254_740_991
+
+
+class ClientEvent(BaseModel):
+    event_type: Literal[
+        "PWA_REGISTRATION_FAILED",
+        "PWA_UPDATE_CHECK_FAILED",
+        "PWA_ACTIVATION_FAILED",
+    ]
+    frontend_version: str = Field(min_length=1, max_length=40)
+    frontend_revision: str = Field(min_length=1, max_length=80)
+    message: str = Field(min_length=1, max_length=240)
 
 
 class LoginRequest(BaseModel):

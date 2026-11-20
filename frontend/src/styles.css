@@ -13,6 +13,7 @@
 
 
 .toolbar-action{text-decoration:none}
+.diagnostics-intro{margin-bottom:16px}.diagnostics-grid{display:grid;gap:16px}.diagnostics-block{display:grid;gap:12px}.diagnostics-block dl{display:grid;gap:8px;margin:0}.diagnostics-block dl div{display:flex;justify-content:space-between;gap:16px;border-bottom:1px solid #f4f4f5;padding-bottom:8px}.diagnostics-block dt{color:var(--muted)}.diagnostics-block dd{margin:0;font-variant-numeric:tabular-nums;text-align:right;overflow-wrap:anywhere}@media(min-width:768px){.diagnostics-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .dashboard-heading{margin-bottom:16px;min-inline-size:0}.dashboard-heading>h1{min-inline-size:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dashboard-month-selector{width:160px;max-inline-size:160px;min-width:0;flex:0 1 160px;display:block}.dashboard-month-selector input{min-width:0;padding:10px 8px}
 .sold-badge{color:var(--financial-positive);background:color-mix(in srgb,var(--financial-positive) 10%,var(--card));border:1px solid color-mix(in srgb,var(--financial-positive) 24%,var(--card))}
 .age-chip{display:inline-flex;align-items:center;min-height:24px;padding:4px 8px;border-radius:999px;font-size:.75rem;line-height:1;white-space:nowrap}.age-chip-neutral{color:var(--muted-foreground);background:#f4f4f5;border:1px solid var(--border)}.age-chip-warning{color:#92400e;background:#fffbeb;border:1px solid #fcd34d}.age-chip-danger{color:#b91c1c;background:#fef2f2;border:1px solid #fecaca}

@@ -57,7 +57,7 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
-The API container applies Alembic migrations before starting. Back up `data/store.db` and verify the backup before deploying a schema change. A migration will stop without changing data if it finds overlapping or non-month-start recurring-expense versions; correct those records deliberately before retrying.
+The API container applies Alembic migrations before starting. Deployments do not create a database backup before migrations. A migration will stop without changing data if it finds overlapping or non-month-start recurring-expense versions; correct those records deliberately before retrying. Automatic code rollback is skipped when migration files changed.
 
 The frontend binds to `127.0.0.1:6001`. Configure the host-managed Cloudflare Tunnel to route the HTTPS hostname to that local address. Keep tunnel credentials outside Git.
 
@@ -71,12 +71,24 @@ make preflight DEPLOY_TARGET=local
 make deploy DEPLOY_TARGET=local
 make local-down
 
-# Raspberry Pi (the remote checkout must already exist and be on main)
-make preflight RASPI_HOST=raspi RASPI_REPO_PATH=/home/ishan/projects/fashion-hub
-make deploy RASPI_HOST=raspi RASPI_REPO_PATH=/home/ishan/projects/fashion-hub
+# Raspberry Pi (deploy an annotated SemVer tag)
+git tag -a v0.1.1 -m "Release v0.1.1"
+git push origin v0.1.1
+make preflight RELEASE_TAG=v0.1.1 RASPI_HOST=raspi RASPI_REPO_PATH=/home/ishan/projects/fashion-hub
+make deploy RELEASE_TAG=v0.1.1 RASPI_HOST=raspi RASPI_REPO_PATH=/home/ishan/projects/fashion-hub
+# Explicit rollback to a known-good release
+make rollback RELEASE_TAG=v0.1.0 RASPI_HOST=raspi RASPI_REPO_PATH=/home/ishan/projects/fashion-hub
+# Inspect deployment state and API build identity
+make status RASPI_HOST=raspi RASPI_REPO_PATH=/home/ishan/projects/fashion-hub
+# Inspect silent PWA update failures
+make logs-api RASPI_HOST=raspi RASPI_REPO_PATH=/home/ishan/projects/fashion-hub
 ```
 
-For repeat use, put non-secret deployment settings in `.env.deploy` (ignored by Git), for example `RASPI_HOST`, `RASPI_REPO_PATH`, and `BRANCH`. The remote `.env` must be created from `.env.example` and contain the production bootstrap password.
+For repeat use, put non-secret deployment settings in `.env.deploy` (ignored by Git), for example `RASPI_HOST` and `RASPI_REPO_PATH`. The remote `.env` must be created from `.env.example` and contain the production bootstrap password. Deploying a previous tag is the rollback procedure.
+
+The PWA checks for a new service worker once when the app is opened or the page is loaded, and once when a suspended installed PWA returns to the foreground. A ready release activates and reloads automatically; an app that remains open is updated on its next launch. Build version, Git revision, and UTC build time are available at the authenticated, unlinked `/diagnostics` route.
+
+Codex manages release tags when a deployment is requested. It selects patch/minor SemVer according to the change type, asks before major releases, updates the synchronized release metadata, creates and pushes the annotated tag, then deploys that exact tag. Normal code changes are not tagged automatically.
 
 ## Nightly backups
 

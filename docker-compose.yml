@@ -1,9 +1,18 @@
 services:
   api:
-    build: ./backend
+    image: fashion-hub-api:${APP_VERSION:-0.1.0}-${APP_REVISION:-dev}
+    build:
+      context: ./backend
+      args:
+        APP_VERSION: ${APP_VERSION:-0.1.0}
+        APP_REVISION: ${APP_REVISION:-dev}
+        APP_BUILT_AT: ${APP_BUILT_AT:-development}
     env_file: .env
     environment:
       APP_ENV: ${APP_ENV:-production}
+      APP_VERSION: ${APP_VERSION:-0.1.0}
+      APP_REVISION: ${APP_REVISION:-dev}
+      APP_BUILT_AT: ${APP_BUILT_AT:-development}
     volumes:
       - ./data:/app/data
     expose:
@@ -14,12 +23,28 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
   frontend:
-    build: ./frontend
+    image: fashion-hub-frontend:${APP_VERSION:-0.1.0}-${APP_REVISION:-dev}
+    build:
+      context: ./frontend
+      args:
+        APP_VERSION: ${APP_VERSION:-0.1.0}
+        APP_REVISION: ${APP_REVISION:-dev}
+        APP_BUILT_AT: ${APP_BUILT_AT:-development}
     depends_on:
       api:
         condition: service_healthy
     ports:
       - "127.0.0.1:6001:80"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     restart: unless-stopped
 

@@ -42,6 +42,10 @@ Dashboard hierarchy: keep the month control right-aligned in the Dashboard title
 - Show connection status and a friendly offline screen; disable writes offline and never claim a save succeeded.
 - Retry reads when connectivity returns.
 
+On each page load or installed-PWA launch, and once when a suspended installed PWA returns to the foreground, check for a new service-worker release and automatically reload when one is ready. Do not poll periodically or require the shop owner to clear site data. Keep release details out of the primary UI; provide them only through the authenticated, unlinked diagnostics route.
+
+PWA registration, update-check, and activation failures must not be shown to the shop owner. Report only sanitized release/build diagnostics to the authenticated logging endpoint; discard telemetry failures silently.
+
 ## States and accessibility
 
 Every data-driven view needs loading, empty, error, success, and provisional-data states. Destructive actions require confirmation. Warnings must be non-blocking unless the action is unsafe. Use accessible labels, semantic controls, keyboard support, clear validation, and color-independent status communication.

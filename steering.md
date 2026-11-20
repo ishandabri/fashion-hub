@@ -18,6 +18,12 @@ This document records project-wide decisions. Update it when a decision changes.
 | Deployment | Docker and Docker Compose on Raspberry Pi 4 ARM64; persistent SQLite volume or bind mount |
 | Authentication | One shared shop account for v1 with secure HTTP-only session cookies |
 | Offline mode | Cache static assets only; financial data entry is online-only in v1 |
+| PWA updates | Check once on page load/app open and once on suspended-app resume; automatically activate and reload a ready release; no periodic polling |
+| Release identity | Annotated SemVer Git tags; build metadata includes version, Git revision, and UTC build time |
+| Release ownership | Codex selects, creates, pushes, and deploys tags only for authorized releases; major bumps require user confirmation |
+| Deployment rollback | Build failures leave running containers untouched; automatic code rollback is allowed only when no migration files changed; no pre-migration backup is taken |
+| Client diagnostics logging | PWA update failures are silently logged through the authenticated API to rotated container stdout logs; no financial data is accepted |
+| Diagnostics | Authenticated, unlinked `/diagnostics` route for frontend/API build identity and service-worker state |
 | Python environment | Use local `venv` for Python development; do not nest it in production containers by default |
 | Documentation | Keep PRD, UX, design, steering, and agent guidance current as the app evolves |
 | Dashboard hierarchy | Right-aligned month control in the title row; minimal summary with Sales and Operating profit cards, one inventory-ageing visual, the 12-month chart, and expandable detailed reports; no unsold-item KPI or ageing attention panel |

@@ -32,6 +32,16 @@ Before changing product behavior or UI, read `prd.md`, `steering.md`, `design.md
 8. Run type checks, linting, relevant tests, and a production build after changes.
 9. Update documentation before implementation when an assumption is needed.
 
+## Release management
+
+- Codex owns release tags when the user authorizes a deployment.
+- Use annotated SemVer tags in the form `vMAJOR.MINOR.PATCH`.
+- Choose patch releases for fixes and maintenance, minor releases for backward-compatible features, and ask before creating a major release.
+- Update synchronized frontend, backend, and API release metadata, run verification, create and push the annotated tag, then deploy that exact tag to the Raspberry Pi.
+- Do not create a pre-migration database backup as part of deployment; use the scheduled backup process separately.
+- Log silent PWA update failures to rotated container logs without showing them in the user interface.
+- Do not create or push tags for ordinary implementation work unless deployment is requested.
+
 ## Implementation order
 
 1. Foundation and authentication.

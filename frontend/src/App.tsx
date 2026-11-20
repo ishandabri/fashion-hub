@@ -24,6 +24,7 @@ import {
 import { Toaster, toast } from "sonner";
 import { api } from "./lib/api";
 import { BusyButton, ConfirmDialog, Page, SkeletonBlock } from "./components/app-ui";
+const DiagnosticsPage = lazy(() => import("./features/diagnostics").then(({ DiagnosticsPage }) => ({ default: DiagnosticsPage })));
 const DashboardPage = lazy(() => import("./features/dashboard").then(({ DashboardPage }) => ({ default: DashboardPage })));
 const EntriesPage = lazy(() => import("./features/entries").then(({ Entries }) => ({ default: Entries })));
 const InventoryPage = lazy(() => import("./features/inventory").then(({ InventoryPage }) => ({ default: InventoryPage })));
@@ -238,6 +239,7 @@ function Protected() {
           element={<Suspense fallback={<SkeletonBlock />}><DashboardPage /></Suspense>}
         />
         <Route path="/entries" element={<Suspense fallback={<SkeletonBlock />}><EntriesPage online={online} /></Suspense>} />
+        <Route path="/diagnostics" element={<Suspense fallback={<SkeletonBlock />}><DiagnosticsPage /></Suspense>} />
         <Route
           path="/inventory"
           element={

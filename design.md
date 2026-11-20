@@ -50,3 +50,7 @@ Build and reuse `AppLayout`, `PageHeader`, `PageContainer`, `FormField`, `Curren
 
 Use shadcn primitives such as Button, Card, Input, Label, Select, Tabs, Dialog, AlertDialog, Sheet, Popover, Calendar, Table, Badge, Separator, Skeleton, Sonner, DropdownMenu, Tooltip, and Chart where appropriate.
 
+## Release diagnostics
+
+Build metadata is not shown in the primary UI. An authenticated, unlinked diagnostics route may show the current frontend/API release version, Git revision, UTC build time, and service-worker state for support.
+

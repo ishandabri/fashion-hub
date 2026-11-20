@@ -76,6 +76,14 @@ test("navigates between primary pages", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Inventory", exact: true })).toBeVisible();
 });
 
+test("shows authenticated build diagnostics outside primary navigation", async ({ page }) => {
+  await page.goto("/diagnostics", { waitUntil: "networkidle" });
+  await expect(page.getByRole("heading", { name: "Diagnostics" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Frontend" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "API" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Diagnostics" })).toHaveCount(0);
+});
+
 test("keeps date and month fields inside mobile layouts", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 568 });
   await page.goto("/dashboard", { waitUntil: "networkidle" });

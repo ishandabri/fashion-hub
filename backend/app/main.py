@@ -4,7 +4,9 @@ import calendar
 import csv
 import io
 import json
+import logging
 from datetime import date
+from datetime import datetime, timezone
 from pathlib import Path
 from uuid import UUID
 
@@ -21,6 +23,7 @@ from .db import SessionLocal, get_db
 from .models import AuditLog, DailySale, EventType, ImportBatch, InventoryEvent, InventoryItem, InventoryStatus, LoginAttempt, OtherExpense, RecurringExpense, RecurringExpenseVersion, SessionRecord, User
 from .schemas import (
     DashboardResponse,
+    ClientEvent,
     DailySaleCreate,
     DailySaleResponse,
     InventoryCreate,
@@ -42,6 +45,7 @@ from .schemas import (
 from .security import clear_session, create_session, current_session, current_user, hash_password, verify_password, require_csrf
 
 settings = get_settings()
+client_event_logger = logging.getLogger("fashion_hub.client_events")
 
 
 def previous_month_start(value: date) -> date:
@@ -65,7 +69,7 @@ async def lifespan(_app: FastAPI):
     yield
 
 
-app = FastAPI(title="Fashion Hub API", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="Fashion Hub API", version=settings.app_version, lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[settings.frontend_origin],
@@ -100,6 +104,26 @@ async def security_headers(request: Request, call_next):
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.get("/api/v1/system/build")
+def build_info(_user: User = Depends(current_user)) -> dict[str, str]:
+    return {"version": settings.app_version, "revision": settings.app_revision, "built_at": settings.app_built_at}
+
+
+@app.post("/api/v1/system/client-events", status_code=204)
+def client_event(payload: ClientEvent, request: Request, _user: User = Depends(current_user)) -> Response:
+    event = {
+        "event": "client_event",
+        "event_type": payload.event_type,
+        "frontend_version": payload.frontend_version,
+        "frontend_revision": payload.frontend_revision,
+        "message": " ".join(payload.message.split()),
+        "user_agent": request.headers.get("user-agent", "")[:256],
+        "occurred_at": datetime.now(timezone.utc).isoformat(),
+    }
+    client_event_logger.warning(json.dumps(event, separators=(",", ":"), ensure_ascii=True))
+    return Response(status_code=204)
 
 
 @app.get("/api/v1/auth/config")
