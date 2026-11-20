@@ -137,6 +137,17 @@ function Login() {
   );
 }
 
+function Home() {
+  const { data, isLoading } = useQuery({
+    queryKey: ["me"],
+    queryFn: () => api<User>("/api/v1/auth/me"),
+    retry: false,
+  });
+  if (isLoading) return <SkeletonBlock />;
+  if (data) return <Navigate to="/dashboard" replace />;
+  return <Login />;
+}
+
 function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const queryClient = useQueryClient();
@@ -243,7 +254,7 @@ export function App() {
     <>
       <Toaster position="top-center" richColors />
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<Home />} />
         <Route path="/*" element={<Protected />} />
       </Routes>
     </>
