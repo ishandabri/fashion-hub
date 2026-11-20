@@ -17,18 +17,11 @@ type Item = {
   item_code: string;
   purchase_date: string;
   purchase_price_paise: number;
-  notes?: string | null;
   current_status: string;
   version: number;
   age_days?: number | null;
 };
 type Page = { items: Item[]; next_cursor: string | null; has_more: boolean };
-type Event = {
-  id: string;
-  event_type: string;
-  event_date: string;
-  reason?: string | null;
-};
 type ImportError = { row: number; message: string };
 type ImportPreview = {
   rows: Record<string, string>[];
@@ -91,7 +84,7 @@ function Dialog({
 }
 function downloadImportTemplate() {
   const csv =
-    "item_code,purchase_date,purchase_price_paise,notes,status,sold_date\nABC-001,2026-11-20,12500,Example item,IN_STOCK,\n";
+    "item_code,purchase_date,purchase_price_paise,status,sold_date\nABC-001,2026-11-20,12500,IN_STOCK,\n";
   const url = URL.createObjectURL(
     new Blob([csv], { type: "text/csv;charset=utf-8" }),
   );
@@ -104,7 +97,6 @@ function downloadImportTemplate() {
 
 export function InventoryPage({ online }: { online: boolean }) {
   const [code, setCode] = useState("");
-  const [notes, setNotes] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
@@ -160,13 +152,11 @@ export function InventoryPage({ online }: { online: boolean }) {
           item_code: code,
           purchase_date: date,
           purchase_price_paise: toPaise(price),
-          notes: notes || null,
         }),
       }),
     onSuccess: () => {
       setCode("");
       setPrice("");
-      setNotes("");
       qc.invalidateQueries({ queryKey: ["inventory"] });
       toast.success("Inventory item added");
     },
@@ -179,7 +169,6 @@ export function InventoryPage({ online }: { online: boolean }) {
           item_code: code,
           purchase_date: date,
           purchase_price_paise: toPaise(price),
-          notes: notes || null,
           expected_version: editing!.version,
         }),
       }),
@@ -236,11 +225,6 @@ export function InventoryPage({ online }: { online: boolean }) {
       );
     },
   });
-  const history = useQuery({
-    queryKey: ["inventory-history", selected?.id],
-    queryFn: () => api<Event[]>(`/api/v1/inventory/${selected!.id}/history`),
-    enabled: !!selected,
-  });
   const previewImport = async () => {
     if (!file) return;
     setPreviewBusy(true);
@@ -278,11 +262,6 @@ export function InventoryPage({ online }: { online: boolean }) {
     setCode(item.item_code);
     setDate(item.purchase_date);
     setPrice(Math.round(item.purchase_price_paise / 100).toString());
-    setNotes(item.notes ?? "");
-  };
-  const openHistory = (item: Item) => {
-    setEditing(null);
-    setSelected(item);
   };
   return (
     <>
@@ -319,14 +298,6 @@ export function InventoryPage({ online }: { online: boolean }) {
             onChange={(e) => setPrice(e.target.value)}
             placeholder="0"
             required
-          />
-        </label>
-        <label>
-          Notes (optional)
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            rows={2}
           />
         </label>
         <button className="primary" disabled={!online || save.isPending}>
@@ -393,8 +364,7 @@ export function InventoryPage({ online }: { online: boolean }) {
               <div>
                 <strong>{item.item_code}</strong>
                 <small>
-                  {item.purchase_date} · {formatINR(item.purchase_price_paise)}{" "}
-                  {item.notes ? `· ${item.notes}` : ""}
+                  {item.purchase_date} · {formatINR(item.purchase_price_paise)}
                 </small>
                 <Age days={item.age_days} />
               </div>
@@ -571,27 +541,40 @@ export function InventoryPage({ online }: { online: boolean }) {
                 required
               />
             </label>
-            <label>
-              Notes (optional)
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                rows={2}
-              />
-            </label>
             {update.error && (
               <p className="error" role="alert">
                 {(update.error as Error).message}
               </p>
             )}
+            {editing.current_status === "SOLD" && (
+              <div className="dialog-actions">
+                <button
+                  className="secondary"
+                  type="button"
+                  disabled={!online}
+                  onClick={() => {
+                    setSelected(editing);
+                    setEditing(null);
+                    setAction("return");
+                  }}
+                >
+                  Mark returned
+                </button>
+                <button
+                  className="danger"
+                  type="button"
+                  disabled={!online}
+                  onClick={() => {
+                    setSelected(editing);
+                    setEditing(null);
+                    setAction("reverse");
+                  }}
+                >
+                  Reverse sale
+                </button>
+              </div>
+            )}
             <div className="dialog-actions">
-              <button
-                className="secondary"
-                type="button"
-                onClick={() => openHistory(editing)}
-              >
-                View history
-              </button>
               <button
                 className="secondary"
                 type="button"
@@ -613,24 +596,15 @@ export function InventoryPage({ online }: { online: boolean }) {
       )}
       {selected && (
         <Dialog
-          title={`${selected.item_code} history`}
+          title={selected.item_code}
           close={() => {
             setSelected(null);
             setAction(null);
           }}
         >
           <p className="muted">
-            {selected.notes || "No notes"} · <Age days={selected.age_days} />
+            <Age days={selected.age_days} />
           </p>
-          {history.data?.map((event) => (
-            <div className="list-row" key={event.id}>
-              <span>{event.event_date}</span>
-              <span>
-                {event.event_type.replaceAll("_", " ")}
-                {event.reason ? ` · ${event.reason}` : ""}
-              </span>
-            </div>
-          ))}
           {selected.current_status === "SOLD" && !action && (
             <div className="dialog-actions">
               <button

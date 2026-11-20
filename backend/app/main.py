@@ -23,7 +23,6 @@ from .schemas import (
     DashboardResponse,
     DailySaleCreate,
     DailySaleResponse,
-    EventResponse,
     InventoryCreate,
     InventoryUpdate,
     InventoryPage,
@@ -426,13 +425,12 @@ def update_inventory(item_id: UUID, payload: InventoryUpdate, db: Session = Depe
     sale_events = list(db.scalars(select(InventoryEvent).where(InventoryEvent.inventory_item_id == item.id, InventoryEvent.event_type == EventType.SOLD)).all())
     if sale_events and any(payload.purchase_date > event.event_date for event in sale_events):
         raise HTTPException(status_code=422, detail="Purchase date cannot follow a sale event")
-    old = {"item_code": item.item_code, "purchase_date": item.purchase_date.isoformat(), "purchase_price_paise": item.purchase_price_paise, "notes": item.notes}
+    old = {"item_code": item.item_code, "purchase_date": item.purchase_date.isoformat(), "purchase_price_paise": item.purchase_price_paise}
     changed_purchase = item.purchase_date != payload.purchase_date or item.purchase_price_paise != payload.purchase_price_paise
     item.item_code = payload.item_code
     item.item_code_normalized = normalized
     item.purchase_date = payload.purchase_date
     item.purchase_price_paise = payload.purchase_price_paise
-    item.notes = payload.notes
     item.version += 1
     if changed_purchase:
         item.events.append(InventoryEvent(event_type=EventType.CORRECTION, event_date=business_today(), reason="Purchase details corrected"))
@@ -478,16 +476,10 @@ def reverse_sale(item_id: UUID, payload: ReverseSaleRequest, db: Session = Depen
     return item
 
 
-@app.get("/api/v1/inventory/{item_id}/history", response_model=list[EventResponse])
-def inventory_history(item_id: UUID, db: Session = Depends(get_db), _user: User = Depends(current_user)):
-    get_item(item_id, db)
-    return list(db.scalars(select(InventoryEvent).where(InventoryEvent.inventory_item_id == item_id).order_by(InventoryEvent.event_date)).all())
-
-
 @app.get("/api/v1/inventory/{item_id}/export")
 def export_inventory_item(item_id: UUID, db: Session = Depends(get_db), _user: User = Depends(current_user)):
     item = get_item(item_id, db)
-    rows = [["item_code", "purchase_date", "purchase_price_paise", "notes", "status"], [item.item_code, item.purchase_date.isoformat(), item.purchase_price_paise, item.notes or "", item.current_status]]
+    rows = [["item_code", "purchase_date", "purchase_price_paise", "status"], [item.item_code, item.purchase_date.isoformat(), item.purchase_price_paise, item.current_status]]
     output = io.StringIO(); csv.writer(output).writerows(rows)
     return StreamingResponse(iter([output.getvalue()]), media_type="text/csv", headers={"Content-Disposition": f'attachment; filename="inventory-{item.item_code}.csv"'})
 
@@ -497,8 +489,8 @@ def export_inventory(status_filter: str | None = Query(default=None, alias="stat
     query = select(InventoryItem).order_by(InventoryItem.purchase_date.desc())
     if status_filter:
         query = query.where(InventoryItem.current_status == status_filter)
-    rows = [["item_code", "purchase_date", "purchase_price_paise", "notes", "status"]]
-    rows.extend([item.item_code, item.purchase_date.isoformat(), item.purchase_price_paise, item.notes or "", item.current_status] for item in db.scalars(query).all())
+    rows = [["item_code", "purchase_date", "purchase_price_paise", "status"]]
+    rows.extend([item.item_code, item.purchase_date.isoformat(), item.purchase_price_paise, item.current_status] for item in db.scalars(query).all())
     output = io.StringIO(); csv.writer(output).writerows(rows)
     return StreamingResponse(iter([output.getvalue()]), media_type="text/csv", headers={"Content-Disposition": 'attachment; filename="inventory.csv"'})
 
@@ -541,7 +533,7 @@ def commit_inventory_import(payload: dict, db: Session = Depends(get_db), user: 
             price = int(str(row["purchase_price_paise"]))
             if not code or normalized in existing or purchase_date > business_today() or price < 0:
                 raise ValueError("Invalid or duplicate inventory row")
-            item = InventoryItem(item_code=code, item_code_normalized=normalized, purchase_date=purchase_date, purchase_price_paise=price, notes=row.get("notes"))
+            item = InventoryItem(item_code=code, item_code_normalized=normalized, purchase_date=purchase_date, purchase_price_paise=price)
             item.events.append(InventoryEvent(event_type=EventType.PURCHASED, event_date=purchase_date, reason="CSV import"))
             if str(row.get("status") or "IN_STOCK") == "SOLD":
                 if not row.get("sold_date"): raise ValueError("Sold row requires sold_date")

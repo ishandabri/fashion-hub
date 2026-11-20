@@ -34,8 +34,6 @@ class InventoryCreate(BaseModel):
     item_code: str = Field(min_length=1, max_length=120)
     purchase_date: date
     purchase_price_paise: int = Field(ge=0, le=MAX_SAFE_PAISE)
-    notes: str | None = None
-
     @field_validator("item_code")
     @classmethod
     def normalize_code(cls, value: str) -> str:
@@ -62,15 +60,6 @@ class InventoryPage(BaseModel):
     items: list[InventoryResponse]
     next_cursor: str | None = None
     has_more: bool
-
-
-class EventResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-    id: UUID
-    event_type: str
-    event_date: date
-    reference_event_id: UUID | None
-    reason: str | None
 
 
 class SellRequest(BaseModel):

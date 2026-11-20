@@ -32,7 +32,7 @@ def test_daily_sales_duplicate_and_negative_validation():
         assert client.post("/api/v1/sales", json={**payload, "sale_date": "2026-11-20", "amount_paise": -1}).status_code == 422
 
 
-def test_inventory_purchase_sale_return_and_history():
+def test_inventory_purchase_sale_return():
     with TestClient(app) as client:
         login(client)
         purchase = client.post("/api/v1/inventory", json={"item_code": "  SHIRT-001  ", "purchase_date": "2026-11-01", "purchase_price_paise": 50000})
@@ -45,8 +45,6 @@ def test_inventory_purchase_sale_return_and_history():
         returned = client.post(f"/api/v1/inventory/{item['id']}/return", json={"return_date": "2026-11-15", "reason": "Customer return"})
         assert returned.status_code == 200
         assert returned.json()["current_status"] == "IN_STOCK"
-        history = client.get(f"/api/v1/inventory/{item['id']}/history")
-        assert [event["event_type"] for event in history.json()] == ["PURCHASED", "SOLD", "RETURNED"]
 
 
 def test_inventory_date_rules():
@@ -58,14 +56,13 @@ def test_inventory_date_rules():
         assert client.post(f"/api/v1/inventory/{item['id']}/sell", json={"sold_date": future}).status_code == 422
 
 
-def test_inventory_card_edit_updates_item_and_preserves_correction_history():
+def test_inventory_card_edit_updates_item():
     with TestClient(app) as client:
         login(client)
-        created = client.post("/api/v1/inventory", json={"item_code": "EDIT-001", "purchase_date": "2026-11-10", "purchase_price_paise": 10000, "notes": "Old"}).json()
-        updated = client.patch(f"/api/v1/inventory/{created['id']}", json={"item_code": "EDIT-001", "purchase_date": "2026-11-09", "purchase_price_paise": 12500, "notes": "New", "expected_version": created["version"]})
+        created = client.post("/api/v1/inventory", json={"item_code": "EDIT-001", "purchase_date": "2026-11-10", "purchase_price_paise": 10000}).json()
+        updated = client.patch(f"/api/v1/inventory/{created['id']}", json={"item_code": "EDIT-001", "purchase_date": "2026-11-09", "purchase_price_paise": 12500, "expected_version": created["version"]})
         assert updated.status_code == 200
         assert updated.json()["purchase_price_paise"] == 12500
-        assert [event["event_type"] for event in client.get(f"/api/v1/inventory/{created['id']}/history").json()] == ["PURCHASED", "CORRECTION"]
 
 
 def test_future_purchase_date_is_rejected():

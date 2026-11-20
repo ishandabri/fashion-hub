@@ -79,7 +79,6 @@ class InventoryItem(Base):
     purchase_date: Mapped[date] = mapped_column(Date, index=True)
     purchase_price_paise: Mapped[int] = mapped_column(Integer)
     current_status: Mapped[str] = mapped_column(String(20), default=InventoryStatus.IN_STOCK, index=True)
-    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     version: Mapped[int] = mapped_column(Integer, default=1)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())

@@ -42,7 +42,7 @@ Make daily work fast and obvious for a nontechnical shop owner. The interface sh
 
 Every data-driven view needs loading, empty, error, success, and provisional-data states. Destructive actions require confirmation. Warnings must be non-blocking unless the action is unsafe. Use accessible labels, semantic controls, keyboard support, clear validation, and color-independent status communication.
 
-Modal dialogs use the top-right X as their dismissal control; do not repeat it with a footer Cancel button. Keep meaningful secondary actions such as Delete, View history, and Retry visible.
+Modal dialogs use the top-right X as their dismissal control; do not repeat it with a footer Cancel button. Keep meaningful secondary actions such as Delete and Retry visible.
 
 Recurring expenses use a pause icon for active rules and a play icon for paused rules. Resuming takes effect from the current business month and preserves the pause interval in history.
 

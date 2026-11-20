@@ -14,7 +14,7 @@ The primary user is a nontechnical shop owner using one secure shared shop login
 
 1. **Dashboard** — current-month P&L, trends, comparisons, and inventory ageing.
 2. **Entries** — Sales, Recurring Expenses, and Other Expenses tabs.
-3. **Inventory** — item-level stock, sale/return events, ageing, import, and history.
+3. **Inventory** — item-level stock, sale/return events, ageing, and import.
 
 Secondary settings, import/export, profile, and administration may use dialogs, drawers, or secondary routes.
 
@@ -32,7 +32,7 @@ Record date, category, description, and amount on an accrual basis. Support cust
 
 ### Inventory
 
-Every physical item has a unique, case-insensitive normalized item code, purchase date, and purchase cost. Optional notes only. Do not add quantity, selling price, product metadata, or categories in v1.
+Every physical item has a unique, case-insensitive normalized item code, purchase date, and purchase cost. Do not add notes, quantity, selling price, product metadata, or categories in v1.
 
 Statuses are `IN_STOCK` and `SOLD`, backed by an immutable event history. Events include `PURCHASED`, `SOLD`, `SALE_REVERSED`, `RETURNED`, and `CORRECTION`.
 
