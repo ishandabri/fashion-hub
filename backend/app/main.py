@@ -25,6 +25,7 @@ from .schemas import (
     DailySaleResponse,
     EventResponse,
     InventoryCreate,
+    InventoryUpdate,
     InventoryPage,
     InventoryResponse,
     LoginRequest,
@@ -384,6 +385,36 @@ def sell_item(item_id: UUID, payload: SellRequest, db: Session = Depends(get_db)
     item.current_status = InventoryStatus.SOLD
     item.version += 1
     item.events.append(InventoryEvent(event_type=EventType.SOLD, event_date=payload.sold_date))
+    db.commit()
+    db.refresh(item)
+    return item
+
+
+@app.patch("/api/v1/inventory/{item_id}", response_model=InventoryResponse)
+def update_inventory(item_id: UUID, payload: InventoryUpdate, db: Session = Depends(get_db), user: User = Depends(current_user)):
+    item = get_item(item_id, db)
+    if payload.expected_version != item.version:
+        raise HTTPException(status_code=409, detail="Inventory item changed elsewhere")
+    if payload.purchase_date > business_today():
+        raise HTTPException(status_code=422, detail="Purchase date cannot be in the future")
+    normalized = payload.item_code.lower()
+    duplicate = db.scalar(select(InventoryItem).where(InventoryItem.item_code_normalized == normalized, InventoryItem.id != item.id))
+    if duplicate:
+        raise HTTPException(status_code=409, detail="Item code already exists")
+    sale_events = list(db.scalars(select(InventoryEvent).where(InventoryEvent.inventory_item_id == item.id, InventoryEvent.event_type == EventType.SOLD)).all())
+    if sale_events and any(payload.purchase_date > event.event_date for event in sale_events):
+        raise HTTPException(status_code=422, detail="Purchase date cannot follow a sale event")
+    old = {"item_code": item.item_code, "purchase_date": item.purchase_date.isoformat(), "purchase_price_paise": item.purchase_price_paise, "notes": item.notes}
+    changed_purchase = item.purchase_date != payload.purchase_date or item.purchase_price_paise != payload.purchase_price_paise
+    item.item_code = payload.item_code
+    item.item_code_normalized = normalized
+    item.purchase_date = payload.purchase_date
+    item.purchase_price_paise = payload.purchase_price_paise
+    item.notes = payload.notes
+    item.version += 1
+    if changed_purchase:
+        item.events.append(InventoryEvent(event_type=EventType.CORRECTION, event_date=business_today(), reason="Purchase details corrected"))
+    db.add(AuditLog(entity_type="inventory_item", entity_id=str(item.id), action="UPDATE", old_values_json=json.dumps(old), new_values_json=json.dumps(payload.model_dump(exclude={"expected_version": True}, mode="json")), user_id=user.id))
     db.commit()
     db.refresh(item)
     return item

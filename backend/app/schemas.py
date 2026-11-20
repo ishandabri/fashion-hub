@@ -45,6 +45,10 @@ class InventoryCreate(BaseModel):
         return value
 
 
+class InventoryUpdate(InventoryCreate):
+    expected_version: int = Field(ge=1)
+
+
 class InventoryResponse(InventoryCreate):
     model_config = ConfigDict(from_attributes=True)
     id: UUID

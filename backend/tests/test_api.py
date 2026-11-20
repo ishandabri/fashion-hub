@@ -58,6 +58,16 @@ def test_inventory_date_rules():
         assert client.post(f"/api/v1/inventory/{item['id']}/sell", json={"sold_date": future}).status_code == 422
 
 
+def test_inventory_card_edit_updates_item_and_preserves_correction_history():
+    with TestClient(app) as client:
+        login(client)
+        created = client.post("/api/v1/inventory", json={"item_code": "EDIT-001", "purchase_date": "2026-11-10", "purchase_price_paise": 10000, "notes": "Old"}).json()
+        updated = client.patch(f"/api/v1/inventory/{created['id']}", json={"item_code": "EDIT-001", "purchase_date": "2026-11-09", "purchase_price_paise": 12500, "notes": "New", "expected_version": created["version"]})
+        assert updated.status_code == 200
+        assert updated.json()["purchase_price_paise"] == 12500
+        assert [event["event_type"] for event in client.get(f"/api/v1/inventory/{created['id']}/history").json()] == ["PURCHASED", "CORRECTION"]
+
+
 def test_future_purchase_date_is_rejected():
     with TestClient(app) as client:
         login(client)
