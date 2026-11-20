@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../lib/api";
-import { formatINR, formatPercentage, formatCompactINR } from "../lib/currency";
+import { formatINR, formatPercentage, formatCompactINR } from "../lib/currency-display";
 import { indiaBusinessMonth } from "../lib/business-date";
 
 type DashboardData = { month: string; sales_paise: number; purchases_paise: number; cogs_paise: number; gross_profit_paise: number; gross_margin_percentage: number | null; recurring_expenses_paise: number; other_expenses_paise: number; net_operating_profit_paise: number; operating_margin_percentage: number | null; closing_inventory_paise: number; unsold_item_count: number; provisional: boolean; trend?: { month: string; sales_paise: number; gross_profit_paise: number; net_operating_profit_paise: number }[]; expense_breakdown?: { category: string; amount_paise: number }[]; ageing_buckets?: { bucket: string; item_count: number; value_paise: number }[]; reconciliation?: { opening_inventory_paise: number | null; purchases_paise: number; cogs_paise: number; closing_inventory_paise: number; difference_paise: number | null; warning: boolean } };

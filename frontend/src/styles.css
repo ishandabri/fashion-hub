@@ -11,3 +11,4 @@
 @media(max-width:520px){.toolbar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:end;overflow:visible;padding-bottom:4px}.toolbar .search-field,.toolbar label:not(.search-field){grid-column:span 1;width:100%;margin:0}.toolbar .toolbar-action{width:100%;grid-column:span 1}}
 
 
+.toolbar-action{text-decoration:none}

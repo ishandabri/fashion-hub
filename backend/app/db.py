@@ -36,7 +36,7 @@ def ensure_compatible_schema() -> None:
     """Apply small additive changes for the development database until migrations are added."""
     inspector = inspect(engine)
     with engine.begin() as connection:
-        for table, column, definition in (("recurring_expenses", "category", "VARCHAR(100) NOT NULL DEFAULT 'Miscellaneous'"), ("recurring_expenses", "paused_from_month", "DATE"), ("other_expenses", "category", "VARCHAR(100) NOT NULL DEFAULT 'Miscellaneous'")):
+        for table, column, definition in (("recurring_expenses", "category", "VARCHAR(100) NOT NULL DEFAULT 'Miscellaneous'"), ("recurring_expenses", "paused_from_month", "DATE"), ("recurring_expenses", "resumed_from_month", "DATE"), ("other_expenses", "category", "VARCHAR(100) NOT NULL DEFAULT 'Miscellaneous'")):
             if table in inspector.get_table_names() and column not in {item["name"] for item in inspector.get_columns(table)}:
                 connection.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {definition}"))
 

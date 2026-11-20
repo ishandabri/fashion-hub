@@ -117,6 +117,7 @@ class RecurringExpense(Base):
     category_id: Mapped[UUID | None] = mapped_column(ForeignKey("expense_categories.id"), nullable=True)
     is_active: Mapped[bool] = mapped_column(default=True)
     paused_from_month: Mapped[date | None] = mapped_column(Date, nullable=True)
+    resumed_from_month: Mapped[date | None] = mapped_column(Date, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
     versions: Mapped[list["RecurringExpenseVersion"]] = relationship(cascade="all, delete-orphan")

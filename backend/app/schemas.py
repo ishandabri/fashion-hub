@@ -145,6 +145,7 @@ class RecurringExpenseResponse(RecurringExpenseCreate):
     id: UUID
     is_active: bool
     paused_from_month: date | None = None
+    resumed_from_month: date | None = None
 
 
 class OtherExpenseCreate(BaseModel):

@@ -24,7 +24,7 @@ One total revenue amount per date. Fields: date and amount. Allow explicit zero-
 
 ### Recurring expenses
 
-Configure monthly expense rules with name, category, amount, effective start month, optional end month, and active status. Preserve historical rates through non-overlapping effective-dated versions. Support future changes, historical corrections with confirmation, pause, and end. V1 uses full-month amounts without daily proration.
+Configure monthly expense rules with name, category, amount, effective start month, optional end month, and active status. Preserve historical rates through non-overlapping effective-dated versions. Support future changes, historical corrections with confirmation, pause, resume from the current business month, and end. V1 uses full-month amounts without daily proration.
 
 ### Other expenses
 

@@ -214,6 +214,7 @@ def list_recurring_expenses(db: Session = Depends(get_db), _user: User = Depends
             "category": expense.category,
             "is_active": expense.is_active,
             "paused_from_month": expense.paused_from_month,
+            "resumed_from_month": expense.resumed_from_month,
         }, **{
             "amount_paise": sorted(expense.versions, key=lambda version: version.effective_start_month, reverse=True)[0].amount_paise,
             "effective_start_month": sorted(expense.versions, key=lambda version: version.effective_start_month, reverse=True)[0].effective_start_month,
@@ -230,7 +231,7 @@ def create_recurring_expense(payload: RecurringExpenseCreate, db: Session = Depe
     db.add(expense)
     db.commit()
     db.refresh(expense)
-    return {**payload.model_dump(), "id": expense.id, "is_active": expense.is_active, "paused_from_month": expense.paused_from_month}
+    return {**payload.model_dump(), "id": expense.id, "is_active": expense.is_active, "paused_from_month": expense.paused_from_month, "resumed_from_month": expense.resumed_from_month}
 
 
 @app.post("/api/v1/recurring-expenses/{expense_id}/pause", response_model=RecurringExpenseResponse)
@@ -245,11 +246,32 @@ def pause_recurring_expense(expense_id: UUID, payload: RecurringExpensePause, db
         raise HTTPException(status_code=422, detail="Pause month cannot precede the expense start month")
     expense.is_active = False
     expense.paused_from_month = payload.pause_from_month
-    db.add(AuditLog(entity_type="recurring_expense", entity_id=str(expense.id), action="PAUSE", old_values_json=json.dumps({"is_active": True, "paused_from_month": None}), new_values_json=json.dumps({"is_active": False, "paused_from_month": payload.pause_from_month.isoformat()}), user_id=user.id))
+    expense.resumed_from_month = None
+    db.add(AuditLog(entity_type="recurring_expense", entity_id=str(expense.id), action="PAUSE", old_values_json=json.dumps({"is_active": True, "paused_from_month": None, "resumed_from_month": None}), new_values_json=json.dumps({"is_active": False, "paused_from_month": payload.pause_from_month.isoformat(), "resumed_from_month": None}), user_id=user.id))
     db.commit()
     db.refresh(expense)
     version = max(expense.versions, key=lambda item: item.effective_start_month)
-    return {"id": expense.id, "expense_name": expense.expense_name, "category": expense.category, "amount_paise": version.amount_paise, "effective_start_month": version.effective_start_month, "effective_end_month": version.effective_end_month, "is_active": expense.is_active, "paused_from_month": expense.paused_from_month}
+    return {"id": expense.id, "expense_name": expense.expense_name, "category": expense.category, "amount_paise": version.amount_paise, "effective_start_month": version.effective_start_month, "effective_end_month": version.effective_end_month, "is_active": expense.is_active, "paused_from_month": expense.paused_from_month, "resumed_from_month": expense.resumed_from_month}
+
+
+@app.post("/api/v1/recurring-expenses/{expense_id}/resume", response_model=RecurringExpenseResponse)
+def resume_recurring_expense(expense_id: UUID, db: Session = Depends(get_db), user: User = Depends(current_user)):
+    expense = db.get(RecurringExpense, expense_id)
+    if not expense:
+        raise HTTPException(status_code=404, detail="Recurring expense not found")
+    if expense.is_active:
+        raise HTTPException(status_code=409, detail="Recurring expense is already active")
+    today = business_today()
+    resume_month = date(today.year, today.month, 1)
+    if expense.paused_from_month and resume_month < expense.paused_from_month:
+        raise HTTPException(status_code=422, detail="Resume month cannot precede the pause month")
+    expense.is_active = True
+    expense.resumed_from_month = resume_month
+    db.add(AuditLog(entity_type="recurring_expense", entity_id=str(expense.id), action="RESUME", old_values_json=json.dumps({"is_active": False, "paused_from_month": expense.paused_from_month.isoformat() if expense.paused_from_month else None, "resumed_from_month": None}), new_values_json=json.dumps({"is_active": True, "paused_from_month": expense.paused_from_month.isoformat() if expense.paused_from_month else None, "resumed_from_month": resume_month.isoformat()}), user_id=user.id))
+    db.commit()
+    db.refresh(expense)
+    version = max(expense.versions, key=lambda item: item.effective_start_month)
+    return {"id": expense.id, "expense_name": expense.expense_name, "category": expense.category, "amount_paise": version.amount_paise, "effective_start_month": version.effective_start_month, "effective_end_month": version.effective_end_month, "is_active": expense.is_active, "paused_from_month": expense.paused_from_month, "resumed_from_month": expense.resumed_from_month}
 
 
 @app.patch("/api/v1/recurring-expenses/{expense_id}", response_model=RecurringExpenseResponse)
@@ -278,7 +300,7 @@ def update_recurring_expense(expense_id: UUID, payload: RecurringExpenseCreate, 
     db.commit()
     db.refresh(expense)
     version = max(expense.versions, key=lambda item: item.effective_start_month)
-    return {"id": expense.id, "expense_name": expense.expense_name, "category": expense.category, "amount_paise": version.amount_paise, "effective_start_month": version.effective_start_month, "effective_end_month": version.effective_end_month, "is_active": expense.is_active, "paused_from_month": expense.paused_from_month}
+    return {"id": expense.id, "expense_name": expense.expense_name, "category": expense.category, "amount_paise": version.amount_paise, "effective_start_month": version.effective_start_month, "effective_end_month": version.effective_end_month, "is_active": expense.is_active, "paused_from_month": expense.paused_from_month, "resumed_from_month": expense.resumed_from_month}
 
 
 @app.get("/api/v1/expenses", response_model=list[OtherExpenseResponse])
@@ -585,7 +607,7 @@ def dashboard(month: str = Query(pattern=r"^\d{4}-\d{2}$"), db: Session = Depend
         .where(
             RecurringExpenseVersion.effective_start_month <= start,
             or_(RecurringExpenseVersion.effective_end_month.is_(None), RecurringExpenseVersion.effective_end_month >= start),
-            or_(RecurringExpense.paused_from_month.is_(None), RecurringExpense.paused_from_month > start),
+            or_(RecurringExpense.paused_from_month.is_(None), RecurringExpense.paused_from_month > start, RecurringExpense.resumed_from_month <= start),
         )
     ) or 0
     operating_expenses = recurring_expenses + other_expenses
@@ -599,7 +621,7 @@ def dashboard(month: str = Query(pattern=r"^\d{4}-\d{2}$"), db: Session = Depend
         key = "0_30" if days <= 30 else "31_60" if days <= 60 else "61_90" if days <= 90 else "90_plus"
         ageing[key][0] += 1; ageing[key][1] += price
     breakdown = db.execute(select(OtherExpense.category, func.sum(OtherExpense.amount_paise)).where(OtherExpense.deleted_at.is_(None), OtherExpense.expense_date >= start, OtherExpense.expense_date < next_start).group_by(OtherExpense.category)).all()
-    recurring_breakdown = db.execute(select(RecurringExpense.category, func.sum(RecurringExpenseVersion.amount_paise)).join(RecurringExpenseVersion, RecurringExpense.id == RecurringExpenseVersion.recurring_expense_id).where(RecurringExpenseVersion.effective_start_month <= start, or_(RecurringExpenseVersion.effective_end_month.is_(None), RecurringExpenseVersion.effective_end_month >= start), or_(RecurringExpense.paused_from_month.is_(None), RecurringExpense.paused_from_month > start)).group_by(RecurringExpense.category)).all()
+    recurring_breakdown = db.execute(select(RecurringExpense.category, func.sum(RecurringExpenseVersion.amount_paise)).join(RecurringExpenseVersion, RecurringExpense.id == RecurringExpenseVersion.recurring_expense_id).where(RecurringExpenseVersion.effective_start_month <= start, or_(RecurringExpenseVersion.effective_end_month.is_(None), RecurringExpenseVersion.effective_end_month >= start), or_(RecurringExpense.paused_from_month.is_(None), RecurringExpense.paused_from_month > start, RecurringExpense.resumed_from_month <= start)).group_by(RecurringExpense.category)).all()
     breakdown_map = {str(category): int(amount or 0) for category, amount in breakdown}
     for category, amount in recurring_breakdown: breakdown_map[str(category)] = breakdown_map.get(str(category), 0) + int(amount or 0)
     trend = []
@@ -611,7 +633,7 @@ def dashboard(month: str = Query(pattern=r"^\d{4}-\d{2}$"), db: Session = Depend
         m_sales = db.scalar(select(func.coalesce(func.sum(DailySale.amount_paise), 0)).where(DailySale.deleted_at.is_(None), DailySale.sale_date >= m_start, DailySale.sale_date < m_next)) or 0
         m_cogs = db.scalar(select(func.coalesce(func.sum(case((InventoryEvent.event_type == EventType.SOLD, InventoryItem.purchase_price_paise), (InventoryEvent.event_type.in_((EventType.RETURNED, EventType.SALE_REVERSED)), -InventoryItem.purchase_price_paise), else_=0)), 0)).select_from(InventoryEvent).join(InventoryItem, InventoryItem.id == InventoryEvent.inventory_item_id).where(InventoryEvent.event_date >= m_start, InventoryEvent.event_date < m_next)) or 0
         m_other = db.scalar(select(func.coalesce(func.sum(OtherExpense.amount_paise), 0)).where(OtherExpense.deleted_at.is_(None), OtherExpense.expense_date >= m_start, OtherExpense.expense_date < m_next)) or 0
-        m_recurring = db.scalar(select(func.coalesce(func.sum(RecurringExpenseVersion.amount_paise), 0)).join(RecurringExpense, RecurringExpense.id == RecurringExpenseVersion.recurring_expense_id).where(RecurringExpenseVersion.effective_start_month <= m_start, or_(RecurringExpenseVersion.effective_end_month.is_(None), RecurringExpenseVersion.effective_end_month >= m_start), or_(RecurringExpense.paused_from_month.is_(None), RecurringExpense.paused_from_month > m_start))) or 0
+        m_recurring = db.scalar(select(func.coalesce(func.sum(RecurringExpenseVersion.amount_paise), 0)).join(RecurringExpense, RecurringExpense.id == RecurringExpenseVersion.recurring_expense_id).where(RecurringExpenseVersion.effective_start_month <= m_start, or_(RecurringExpenseVersion.effective_end_month.is_(None), RecurringExpenseVersion.effective_end_month >= m_start), or_(RecurringExpense.paused_from_month.is_(None), RecurringExpense.paused_from_month > m_start, RecurringExpense.resumed_from_month <= m_start))) or 0
         trend.append({"month": m_start.strftime("%Y-%m"), "sales_paise": int(m_sales), "gross_profit_paise": int(m_sales - m_cogs), "net_operating_profit_paise": int(m_sales - m_cogs - m_other - m_recurring)})
     previous = trend[-2] if len(trend) > 1 else None
     comparisons = {key: {"current_paise": int(value), "previous_paise": int(previous[key]) if previous else None, "change_paise": int(value - previous[key]) if previous else None} for key, value in (("sales_paise", sales), ("gross_profit_paise", gross), ("net_operating_profit_paise", net_operating_profit))}

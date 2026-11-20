@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatCompactINR, formatINR, formatIndianNumber, formatPercentage, MAX_SAFE_PAISE, toPaise } from "./currency";
+import { formatCompactINR, formatINR, formatIndianNumber, formatPercentage, MAX_SAFE_PAISE, toPaise } from "./currency-display";
 
 describe("currency utilities", () => {
   it("converts rupee input to paise exactly", () => {

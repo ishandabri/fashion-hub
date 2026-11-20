@@ -147,6 +147,20 @@ def test_pausing_recurring_expense_stops_future_months_and_preserves_history():
         assert december["recurring_expenses_paise"] == 0
 
 
+def test_resuming_recurring_expense_restarts_from_current_month_without_rewriting_pause_history():
+    with TestClient(app) as client:
+        login(client)
+        created = client.post("/api/v1/recurring-expenses", json={"expense_name": "Rent", "amount_paise": 10000, "effective_start_month": "2026-10-01"}).json()
+        paused = client.post(f"/api/v1/recurring-expenses/{created['id']}/pause", json={"pause_from_month": "2026-11-01"}).json()
+        resumed = client.post(f"/api/v1/recurring-expenses/{created['id']}/resume")
+        assert resumed.status_code == 200
+        assert resumed.json()["is_active"] is True
+        assert resumed.json()["paused_from_month"] == "2026-11-01"
+        assert resumed.json()["resumed_from_month"] == "2026-11-01"
+        assert client.get("/api/v1/reports/dashboard?month=2026-10").json()["recurring_expenses_paise"] == 10000
+        assert client.get("/api/v1/reports/dashboard?month=2026-11").json()["recurring_expenses_paise"] == 10000
+
+
 def test_editing_recurring_expense_creates_salary_version():
     with TestClient(app) as client:
         login(client)
