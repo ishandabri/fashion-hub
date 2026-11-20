@@ -3,6 +3,16 @@ import { expect, test } from "@playwright/test";
 const e2eUsername = process.env.E2E_USERNAME ?? "hema";
 const e2ePassword = process.env.E2E_PASSWORD ?? "hema1234";
 
+async function expectNoHorizontalOverflow(page: import("@playwright/test").Page) {
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+      ),
+    )
+    .toBe(true);
+}
+
 test.beforeEach(async ({ page }) => {
   await page.goto("/", { waitUntil: "networkidle" });
   await page.getByLabel("Username").fill(e2eUsername);
@@ -41,6 +51,27 @@ test("navigates between primary pages", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Add recurring expense" })).toBeVisible();
   await page.getByRole("link", { name: "Inventory" }).click();
   await expect(page.getByRole("heading", { name: "Inventory", exact: true })).toBeVisible();
+});
+
+test("keeps date and month fields inside mobile layouts", async ({ page }) => {
+  await expect(page.locator(".dashboard-month-selector input")).toBeVisible();
+  await expectNoHorizontalOverflow(page);
+
+  await page.getByRole("link", { name: "Entries" }).click();
+  await expect(page.locator('input[type="date"]')).toBeVisible();
+  await expectNoHorizontalOverflow(page);
+
+  await page.getByRole("tab", { name: "Recurring expenses" }).click();
+  await expect(page.locator('input[type="month"]')).toBeVisible();
+  await expectNoHorizontalOverflow(page);
+
+  await page.getByRole("tab", { name: "Other expenses" }).click();
+  await expect(page.locator('input[type="date"]')).toBeVisible();
+  await expectNoHorizontalOverflow(page);
+
+  await page.getByRole("link", { name: "Inventory" }).click();
+  await expect(page.locator('input[type="date"]')).toBeVisible();
+  await expectNoHorizontalOverflow(page);
 });
 
 test("validates the inventory entry flow", async ({ page }) => {
