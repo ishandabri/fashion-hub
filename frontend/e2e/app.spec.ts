@@ -23,6 +23,19 @@ async function expectMobileFormControlsAtLeast16px(page: import("@playwright/tes
     .toBe(true);
 }
 
+async function expectTemporalControlsWebKitSafe(page: import("@playwright/test").Page) {
+  await expect
+    .poll(() =>
+      page.locator('input[type="date"], input[type="month"]').evaluateAll((controls) =>
+        controls.every((control) => {
+          const style = getComputedStyle(control);
+          return style.padding === "0px" && Number.parseFloat(style.minHeight) >= 44;
+        }),
+      ),
+    )
+    .toBe(true);
+}
+
 test.beforeEach(async ({ page }) => {
   await page.goto("/", { waitUntil: "networkidle" });
   await page.getByLabel("Username").fill(e2eUsername);
@@ -68,26 +81,31 @@ test("keeps date and month fields inside mobile layouts", async ({ page }) => {
   await page.goto("/dashboard", { waitUntil: "networkidle" });
   await expect(page.locator(".dashboard-month-selector input")).toBeVisible();
   await expectMobileFormControlsAtLeast16px(page);
+  await expectTemporalControlsWebKitSafe(page);
   await expectNoHorizontalOverflow(page);
 
   await page.getByRole("link", { name: "Entries" }).click();
   await expect(page.locator('input[type="date"]')).toBeVisible();
   await expectMobileFormControlsAtLeast16px(page);
+  await expectTemporalControlsWebKitSafe(page);
   await expectNoHorizontalOverflow(page);
 
   await page.getByRole("tab", { name: "Recurring expenses" }).click();
   await expect(page.locator('input[type="month"]')).toBeVisible();
   await expectMobileFormControlsAtLeast16px(page);
+  await expectTemporalControlsWebKitSafe(page);
   await expectNoHorizontalOverflow(page);
 
   await page.getByRole("tab", { name: "Other expenses" }).click();
   await expect(page.locator('input[type="date"]')).toBeVisible();
   await expectMobileFormControlsAtLeast16px(page);
+  await expectTemporalControlsWebKitSafe(page);
   await expectNoHorizontalOverflow(page);
 
   await page.getByRole("link", { name: "Inventory" }).click();
   await expect(page.locator('input[type="date"]')).toBeVisible();
   await expectMobileFormControlsAtLeast16px(page);
+  await expectTemporalControlsWebKitSafe(page);
   await expectNoHorizontalOverflow(page);
 });
 
