@@ -33,8 +33,8 @@ type ImportPreview = {
 
 function Age({ days }: { days?: number | null }) {
   if (days == null) return null;
-  const tone = days >= 90 ? "danger" : days >= 60 ? "warning" : "badge";
-  return <span className={tone}>{days}d old</span>;
+  const tone = days >= 90 ? "age-chip-danger" : days >= 60 ? "age-chip-warning" : "age-chip-neutral";
+  return <span className={`age-chip ${tone}`}>{days}d old</span>;
 }
 function stripModalCancelButtons(node: React.ReactNode): React.ReactNode {
   return React.Children.map(node, (child) => {
