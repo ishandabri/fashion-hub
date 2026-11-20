@@ -32,6 +32,7 @@ Dashboard hierarchy: keep the month control right-aligned in the Dashboard title
 - Preserve content hierarchy when grids and tables collapse.
 - Keep the 12-month P&L chart at a compact fixed height with abbreviated month labels and exact values available on interaction; it must not require horizontal scrolling.
 - Respect iOS safe areas, viewport behavior, touch targets, keyboard navigation, and visible focus.
+- Keep interactive form controls at least 16 CSS pixels on touch/mobile browsers to prevent focus zoom; keep native date/month controls inside their cards and dialogs.
 
 ## PWA behavior
 

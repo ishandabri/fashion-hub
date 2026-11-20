@@ -91,7 +91,7 @@ Use Argon2id or equivalent password hashing, secure HTTP-only SameSite cookies, 
 
 ## PWA and offline behavior
 
-Use vite-plugin-pwa with Store Manager / Store naming, standalone display, theme/background colors, 192×192, 512×512, and maskable icons. Cache static assets only. Financial APIs remain online-only in v1. When offline, show connection state, disable writes, never fake success, and retry reads after reconnection.
+Use vite-plugin-pwa with Store Manager / Store naming, standalone display, theme/background colors, 192×192, 512×512, and maskable icons. Cache static assets only. Financial APIs remain online-only in v1. When offline, show connection state, disable writes, never fake success, and retry reads after reconnection. On touch/mobile browsers, interactive form controls render at a minimum of 16 CSS pixels to prevent focus zoom; native date/month controls must remain within their containing sections.
 
 ## Deployment and recovery
 

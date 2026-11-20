@@ -13,6 +13,16 @@ async function expectNoHorizontalOverflow(page: import("@playwright/test").Page)
     .toBe(true);
 }
 
+async function expectMobileFormControlsAtLeast16px(page: import("@playwright/test").Page) {
+  await expect
+    .poll(() =>
+      page.locator("input, select, textarea").evaluateAll((controls) =>
+        controls.every((control) => getComputedStyle(control).fontSize === "16px"),
+      ),
+    )
+    .toBe(true);
+}
+
 test.beforeEach(async ({ page }) => {
   await page.goto("/", { waitUntil: "networkidle" });
   await page.getByLabel("Username").fill(e2eUsername);
@@ -54,24 +64,38 @@ test("navigates between primary pages", async ({ page }) => {
 });
 
 test("keeps date and month fields inside mobile layouts", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 568 });
+  await page.goto("/dashboard", { waitUntil: "networkidle" });
   await expect(page.locator(".dashboard-month-selector input")).toBeVisible();
+  await expectMobileFormControlsAtLeast16px(page);
   await expectNoHorizontalOverflow(page);
 
   await page.getByRole("link", { name: "Entries" }).click();
   await expect(page.locator('input[type="date"]')).toBeVisible();
+  await expectMobileFormControlsAtLeast16px(page);
   await expectNoHorizontalOverflow(page);
 
   await page.getByRole("tab", { name: "Recurring expenses" }).click();
   await expect(page.locator('input[type="month"]')).toBeVisible();
+  await expectMobileFormControlsAtLeast16px(page);
   await expectNoHorizontalOverflow(page);
 
   await page.getByRole("tab", { name: "Other expenses" }).click();
   await expect(page.locator('input[type="date"]')).toBeVisible();
+  await expectMobileFormControlsAtLeast16px(page);
   await expectNoHorizontalOverflow(page);
 
   await page.getByRole("link", { name: "Inventory" }).click();
   await expect(page.locator('input[type="date"]')).toBeVisible();
+  await expectMobileFormControlsAtLeast16px(page);
   await expectNoHorizontalOverflow(page);
+});
+
+test("keeps login controls at 16px on mobile", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 568 });
+  await page.goto("/", { waitUntil: "networkidle" });
+  await expectMobileFormControlsAtLeast16px(page);
+  await expect(page.getByLabel("Password")).toHaveCSS("font-size", "16px");
 });
 
 test("validates the inventory entry flow", async ({ page }) => {

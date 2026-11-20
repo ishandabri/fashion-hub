@@ -12,6 +12,7 @@ Dashboard visual rule: right-align the compact month control in the title row, t
 - Icons: shadcn-compatible icons only.
 - Typography: clean system font or Inter.
 - Product form: mobile-first progressive web app.
+- Mobile form controls: render interactive inputs, selects, and textareas at a minimum of 16 CSS pixels; labels may use the compact body scale.
 - Financial figures: tabular numerals.
 
 ## Semantic tokens

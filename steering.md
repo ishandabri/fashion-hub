@@ -7,6 +7,7 @@ This document records project-wide decisions. Update it when a decision changes.
 | Product | A simple clothing-store P&L and inventory manager; not a POS, ERP, or billing system |
 | Primary navigation | Exactly Dashboard, Entries, and Inventory |
 | Product form | Mobile-first progressive web app, enhanced for desktop |
+| Mobile form controls | Interactive inputs, selects, and textareas use at least 16 CSS pixels on touch/mobile browsers; native date/month controls remain contained within their layout |
 | UI system | shadcn/ui only, with reusable primitives and semantic tokens |
 | Icons | shadcn-compatible icons only; no alternate icon library |
 | Theme | Minimal light theme using a neutral shadcn palette and one restrained accent |
